@@ -1,4 +1,4 @@
-# Etapa 1: compilacion de go
+# Etapa 1: compilacion de main.go con go
 FROM golang:1.26-alpine AS builder 
 # usamos la version 1.26 de go sobre alpine, 
 #porque alpine es lo mas ligero posible y usamos esa version de go en el go.mod (la 1.26.5)
