@@ -99,6 +99,13 @@ make clean      # borra artefactos de build
 
 - **Los tests corren contra la misma base de Docker**: alcanza con `make test` que levanta la DB y corre todo. Si algún día se quiere una base separada para tests, sería el paso a dar (ej. `mydb_test`).
 
+## Problema solucionado
+
+Cuando cambiamos el esquema a `SERIAL PRIMARY KEY`, a quien hacía pull le rompían los tests con errores raros (`duplicate key violates ..._pkey` y "id debería ser generado"), aunque la base se levantaba bien. Nos llevó un rato darnos cuenta de qué pasaba. `make test` levanta la base y corre los tests, pero **no** regenera el código de sqlc (eso solo lo hace `make build`). Como ese código generado **no se versiona** (está en `.gitignore`), la persona que hizo pull seguía compilando con sus `.go` locales, que eran de la versión anterior del esquema.
+
+No era un problema de la base ni de los tests, sino de que el código de sqlc local estaba desactualizado. Lo resolvimos regenerando a mano con `sqlc generate` y ahí sí, `make test` pasó.
+
 ## Consultas
+
  - ¿Incluimos la instalacion de las herramientas de desarrollo en el makefile? (por ahora no los incorporamos)
  - ¿los tests van en raiz o dentro de db/sqlc/? (por ahora los dejamos dentro de db/sqlc)
