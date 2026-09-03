@@ -6,6 +6,7 @@ services:
       #nuestro servidor esta escuchando en el puerto 8080 segun el main.go
     depends_on:
       - database
+      
   database:
     image: postgres:18
     ports:

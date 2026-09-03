@@ -13,6 +13,8 @@ RUN go mod download
 #copia nuestro proyecto dentro de docker
 COPY . .
 
+#sqlc generate
+
 #lo compila y crea un ejecutable que llamaremos Los5
 RUN CGO_ENABLED=0 go build -o Los5 .
 
