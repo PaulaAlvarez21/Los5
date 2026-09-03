@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -6,15 +6,13 @@ import (
 	"errors"
 	"testing"
 	"time"
-
-	db "Los5.com/ServidorWeb/db/sqlc"
 )
 
-func datosTestHuesped(t *testing.T) db.Huesped {
+func datosTestHuesped(t *testing.T) Huesped {
 	t.Helper()
 
 	// crear departamento dependiente
-	depto, err := testQueries.CreateDepartamento(context.Background(), db.CreateDepartamentoParams{
+	depto, err := testQueries.CreateDepartamento(context.Background(), CreateDepartamentoParams{
 		Nombre:      "Depto Huesped",
 		Direccion:   "Calle Huesped 200",
 		Disponible:  true,
@@ -30,7 +28,7 @@ func datosTestHuesped(t *testing.T) db.Huesped {
 	fechaInicio := time.Date(2026, 9, 20, 0, 0, 0, 0, time.UTC)
 	fechaFin := time.Date(2026, 9, 25, 0, 0, 0, 0, time.UTC)
 
-	reserva, err := testQueries.CreateReserva(context.Background(), db.CreateReservaParams{
+	reserva, err := testQueries.CreateReserva(context.Background(), CreateReservaParams{
 		FechaInicio:   fechaInicio,
 		IDDepto:       depto.IDDepto,
 		FechaFin:      fechaFin,
@@ -44,7 +42,7 @@ func datosTestHuesped(t *testing.T) db.Huesped {
 	}
 	t.Cleanup(func() { testQueries.DeleteReserva(context.Background(), reserva.IDReserva) })
 
-	huesped, err := testQueries.CreateHuesped(context.Background(), db.CreateHuespedParams{
+	huesped, err := testQueries.CreateHuesped(context.Background(), CreateHuespedParams{
 		IDReserva:     reserva.IDReserva,
 		Nombre:        "Juan",
 		Apellido:      "Perez",
@@ -107,7 +105,7 @@ func TestListHuespedes(t *testing.T) {
 func TestUpdateHuesped(t *testing.T) {
 	huesped := datosTestHuesped(t)
 
-	arg := db.UpdateHuespedParams{
+	arg := UpdateHuespedParams{
 		IDHuesped:     huesped.IDHuesped,
 		IDReserva:     huesped.IDReserva,
 		Nombre:        "Maria",

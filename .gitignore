@@ -1,2 +1,3 @@
-/db/sqlc/
+/db/sqlc/*.go
+!/db/sqlc/*_test.go
 .env
