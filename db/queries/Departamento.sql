@@ -10,9 +10,9 @@ ORDER BY nombre;
 
 -- name: CreateDepartamento :one
 INSERT INTO DEPARTAMENTO (
-    id_depto, nombre, direccion, disponible, limpio, descripcion
+    nombre, direccion, disponible, limpio, descripcion
 )
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id_depto, nombre, direccion, disponible, limpio, descripcion;
 
 -- name: UpdateDepartamento :exec

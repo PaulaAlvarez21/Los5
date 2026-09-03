@@ -3,18 +3,18 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
 	db "Los5.com/ServidorWeb/db/sqlc"
 )
 
-func createTestReserva(t *testing.T) db.Reserva {
+func datosTestReserva(t *testing.T) db.Reserva {
 	t.Helper()
 
 	// crear departamento dependiente primero
 	depto, err := testQueries.CreateDepartamento(context.Background(), db.CreateDepartamentoParams{
-		IDDepto:     100,
 		Nombre:      "Depto Reserva",
 		Direccion:   "Av. Principal 100",
 		Disponible:  true,
@@ -24,12 +24,12 @@ func createTestReserva(t *testing.T) db.Reserva {
 	if err != nil {
 		t.Fatalf("no se pudo crear departamento para reserva: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteDepartamento(context.Background(), depto.IDDepto) })
 
 	fechaInicio := time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)
 	fechaFin := time.Date(2026, 9, 15, 0, 0, 0, 0, time.UTC)
 
 	reserva, err := testQueries.CreateReserva(context.Background(), db.CreateReservaParams{
-		IDReserva:     1,
 		FechaInicio:   fechaInicio,
 		IDDepto:       depto.IDDepto,
 		FechaFin:      fechaFin,
@@ -41,17 +41,15 @@ func createTestReserva(t *testing.T) db.Reserva {
 	if err != nil {
 		t.Fatalf("no se pudo crear reserva: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteReserva(context.Background(), reserva.IDReserva) })
 	return reserva
 }
 
 func TestCreateReserva(t *testing.T) {
-	reserva := createTestReserva(t)
+	reserva := datosTestReserva(t)
 
-	if reserva.IDReserva != 1 {
-		t.Errorf("id_reserva incorrecto, esperado 1, got %d", reserva.IDReserva)
-	}
-	if reserva.IDDepto != 100 {
-		t.Errorf("id_depto incorrecto, esperado 100, got %d", reserva.IDDepto)
+	if reserva.IDReserva == 0 {
+		t.Error("id_reserva deberia ser generado por la base de datos")
 	}
 	if reserva.CantNoches != 5 {
 		t.Errorf("cant_noches incorrecto, esperado 5, got %d", reserva.CantNoches)
@@ -59,14 +57,10 @@ func TestCreateReserva(t *testing.T) {
 	if reserva.PrecioBase != "50000.00" {
 		t.Errorf("precio_base incorrecto, esperado '50000.00', got '%s'", reserva.PrecioBase)
 	}
-
-	// limpiar
-	testQueries.DeleteReserva(context.Background(), reserva.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), reserva.IDDepto)
 }
 
 func TestGetReserva(t *testing.T) {
-	reserva := createTestReserva(t)
+	reserva := datosTestReserva(t)
 
 	got, err := testQueries.GetReserva(context.Background(), reserva.IDReserva)
 	if err != nil {
@@ -78,15 +72,11 @@ func TestGetReserva(t *testing.T) {
 	if got.FechaInicio != reserva.FechaInicio {
 		t.Errorf("fecha_inicio incorrecta, esperado %v, got %v", reserva.FechaInicio, got.FechaInicio)
 	}
-
-	// limpiar
-	testQueries.DeleteReserva(context.Background(), reserva.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), reserva.IDDepto)
 }
 
 func TestListReservas(t *testing.T) {
-	reserva1 := createTestReserva(t)
-	reserva2 := createTestReserva(t)
+	datosTestReserva(t)
+	datosTestReserva(t)
 
 	reservas, err := testQueries.ListReservas(context.Background())
 	if err != nil {
@@ -95,15 +85,10 @@ func TestListReservas(t *testing.T) {
 	if len(reservas) < 2 {
 		t.Errorf("esperaba al menos 2 reservas, got %d", len(reservas))
 	}
-
-	// limpiar
-	testQueries.DeleteReserva(context.Background(), reserva1.IDReserva)
-	testQueries.DeleteReserva(context.Background(), reserva2.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), reserva1.IDDepto)
 }
 
 func TestUpdateReserva(t *testing.T) {
-	reserva := createTestReserva(t)
+	reserva := datosTestReserva(t)
 
 	nuevaFecha := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
 	nuevaFechaFin := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
@@ -133,14 +118,10 @@ func TestUpdateReserva(t *testing.T) {
 	if got.CantNoches != 4 {
 		t.Errorf("cant_noches no se actualizo, esperado 4, got %d", got.CantNoches)
 	}
-
-	// limpiar
-	testQueries.DeleteReserva(context.Background(), reserva.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), reserva.IDDepto)
 }
 
 func TestDeleteReserva(t *testing.T) {
-	reserva := createTestReserva(t)
+	reserva := datosTestReserva(t)
 
 	err := testQueries.DeleteReserva(context.Background(), reserva.IDReserva)
 	if err != nil {
@@ -148,10 +129,7 @@ func TestDeleteReserva(t *testing.T) {
 	}
 
 	_, err = testQueries.GetReserva(context.Background(), reserva.IDReserva)
-	if err == nil {
-		t.Error("esperaba error al obtener reserva eliminada, pero no hubo error")
+	if !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("esperaba sql.ErrNoRows al obtener reserva eliminada, got %v", err)
 	}
-
-	// limpiar
-	testQueries.DeleteDepartamento(context.Background(), reserva.IDDepto)
 }

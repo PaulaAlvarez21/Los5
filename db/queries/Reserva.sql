@@ -10,10 +10,10 @@ ORDER BY fecha_inicio;
 
 -- name: CreateReserva :one
 INSERT INTO RESERVA (
-    id_reserva, fecha_inicio, id_depto, fecha_fin,
+    fecha_inicio, id_depto, fecha_fin,
     precio_base, cant_noches, descuento, observaciones
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id_reserva, fecha_inicio, id_depto, fecha_fin, precio_base, cant_noches, descuento, observaciones;
 
 -- name: UpdateReserva :exec

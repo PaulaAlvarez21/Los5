@@ -31,7 +31,6 @@ WORKDIR /app
 
 #copia desde la etapa anterior
 COPY --from=builder /app/Los5 .
-COPY --from=builder /app/static ./static
 
 #indica que puerto, por defecto dejamos el 8080
 EXPOSE 8080

@@ -10,9 +10,9 @@ ORDER BY apellido, nombre;
 
 -- name: CreateHuesped :one
 INSERT INTO HUESPED (
-    id_huesped, id_reserva, nombre, apellido, telefono, email, observaciones
+    id_reserva, nombre, apellido, telefono, email, observaciones
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id_huesped, id_reserva, nombre, apellido, telefono, email, observaciones;
 
 -- name: UpdateHuesped :exec

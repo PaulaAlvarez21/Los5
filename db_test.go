@@ -26,6 +26,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testQueries = db.New(connection)
+	defer connection.Close()
 
 	os.Exit(m.Run())
 }

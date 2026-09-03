@@ -11,12 +11,19 @@ services:
     image: postgres:18
     ports:
     - "5432:5432"
+        #puerto estandar de portgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-    - postgres_data:/var/lib/postgresql/data
-    #puerto estandar de portgres
+      - postgres_data:/var/lib/postgresql
+      - ./db/schema/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      #PostgreSQL en Docker tiene un mecanismo: cuando el volumen de datos está vacío (primera vez o después de un down -v),
+      #ejecuta automáticamente los .sql que encuentre en /docker-entrypoint-initdb.d/.
+      #solo se ejecuta cuando el volumen de datos está vacío (primera vez o después de docker compose down -v). Si ya tenés datos y hacés docker compose up, PostgreSQL ve que el volumen no está vacío y no ejecuta nada.
+#Podemos aprovechar esa dinamica de postgres porque el código ya depende de PostgreSQL — el go.mod usa github.com/jackc/pgx/v5 como driver y el TestMain se conecta directamente a PostgreSQL.
+
+
 volumes:
-postgres_data:
+  postgres_data:

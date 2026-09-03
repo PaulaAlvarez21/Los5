@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"testing"
 
 	db "Los5.com/ServidorWeb/db/sqlc"
 )
 
-func createTestDepartamento(t *testing.T) db.Departamento {
+func datosTestDepartamento(t *testing.T) db.Departamento {
 	t.Helper()
 	arg := db.CreateDepartamentoParams{
-		IDDepto:     1,
 		Nombre:      "Depto Test",
 		Direccion:   "Calle Falsa 123",
 		Disponible:  true,
@@ -22,14 +22,15 @@ func createTestDepartamento(t *testing.T) db.Departamento {
 	if err != nil {
 		t.Fatalf("no se pudo crear departamento: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteDepartamento(context.Background(), depto.IDDepto) })
 	return depto
 }
 
 func TestCreateDepartamento(t *testing.T) {
-	depto := createTestDepartamento(t)
+	depto := datosTestDepartamento(t)
 
-	if depto.IDDepto != 1 {
-		t.Errorf("id_depto incorrecto, esperado 1, got %d", depto.IDDepto)
+	if depto.IDDepto == 0 {
+		t.Error("id_depto deberia ser generado por la base de datos")
 	}
 	if depto.Nombre != "Depto Test" {
 		t.Errorf("nombre incorrecto, esperado 'Depto Test', got '%s'", depto.Nombre)
@@ -46,13 +47,10 @@ func TestCreateDepartamento(t *testing.T) {
 	if depto.Descripcion.String != "Descripcion de prueba" {
 		t.Errorf("descripcion incorrecta, got '%s'", depto.Descripcion.String)
 	}
-
-	// limpiar
-	testQueries.DeleteDepartamento(context.Background(), depto.IDDepto)
 }
 
 func TestGetDepartamento(t *testing.T) {
-	depto := createTestDepartamento(t)
+	depto := datosTestDepartamento(t)
 
 	got, err := testQueries.GetDepartamento(context.Background(), depto.IDDepto)
 	if err != nil {
@@ -64,15 +62,11 @@ func TestGetDepartamento(t *testing.T) {
 	if got.Nombre != depto.Nombre {
 		t.Errorf("nombre incorrecto, esperado '%s', got '%s'", depto.Nombre, got.Nombre)
 	}
-
-	// limpiar
-	testQueries.DeleteDepartamento(context.Background(), depto.IDDepto)
 }
 
 func TestListDepartamentos(t *testing.T) {
-	// crear 2 departamentos
-	depto1 := createTestDepartamento(t)
-	depto2 := createTestDepartamento(t)
+	datosTestDepartamento(t)
+	datosTestDepartamento(t)
 
 	departamentos, err := testQueries.ListDepartamentos(context.Background())
 	if err != nil {
@@ -81,14 +75,10 @@ func TestListDepartamentos(t *testing.T) {
 	if len(departamentos) < 2 {
 		t.Errorf("esperaba al menos 2 departamentos, got %d", len(departamentos))
 	}
-
-	// limpiar
-	testQueries.DeleteDepartamento(context.Background(), depto1.IDDepto)
-	testQueries.DeleteDepartamento(context.Background(), depto2.IDDepto)
 }
 
 func TestUpdateDepartamento(t *testing.T) {
-	depto := createTestDepartamento(t)
+	depto := datosTestDepartamento(t)
 
 	arg := db.UpdateDepartamentoParams{
 		IDDepto:     depto.IDDepto,
@@ -116,13 +106,10 @@ func TestUpdateDepartamento(t *testing.T) {
 	if got.Disponible {
 		t.Error("disponible deberia ser false")
 	}
-
-	// limpiar
-	testQueries.DeleteDepartamento(context.Background(), depto.IDDepto)
 }
 
 func TestDeleteDepartamento(t *testing.T) {
-	depto := createTestDepartamento(t)
+	depto := datosTestDepartamento(t)
 
 	err := testQueries.DeleteDepartamento(context.Background(), depto.IDDepto)
 	if err != nil {
@@ -130,7 +117,7 @@ func TestDeleteDepartamento(t *testing.T) {
 	}
 
 	_, err = testQueries.GetDepartamento(context.Background(), depto.IDDepto)
-	if err == nil {
-		t.Error("esperaba error al obtener departamento eliminado, pero no hubo error")
+	if !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("esperaba sql.ErrNoRows al obtener departamento eliminado, got %v", err)
 	}
 }

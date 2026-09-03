@@ -1,7 +1,7 @@
 Ejecutar con comando: docker compose up
 (ó docker compose up -d para segundo plano)
 
-1. agregar postgres a dockercompose
+
 1.instalar sqlc (por si no lo tenemos local (las dos))
 2. hacer sqlc generate 
 3. agregar la carpeta a gitignore

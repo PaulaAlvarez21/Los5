@@ -3,18 +3,18 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"testing"
 	"time"
 
 	db "Los5.com/ServidorWeb/db/sqlc"
 )
 
-func createTestHuesped(t *testing.T) db.Huesped {
+func datosTestHuesped(t *testing.T) db.Huesped {
 	t.Helper()
 
 	// crear departamento dependiente
 	depto, err := testQueries.CreateDepartamento(context.Background(), db.CreateDepartamentoParams{
-		IDDepto:     200,
 		Nombre:      "Depto Huesped",
 		Direccion:   "Calle Huesped 200",
 		Disponible:  true,
@@ -24,13 +24,13 @@ func createTestHuesped(t *testing.T) db.Huesped {
 	if err != nil {
 		t.Fatalf("no se pudo crear departamento para huesped: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteDepartamento(context.Background(), depto.IDDepto) })
 
 	// crear reserva dependiente
 	fechaInicio := time.Date(2026, 9, 20, 0, 0, 0, 0, time.UTC)
 	fechaFin := time.Date(2026, 9, 25, 0, 0, 0, 0, time.UTC)
 
 	reserva, err := testQueries.CreateReserva(context.Background(), db.CreateReservaParams{
-		IDReserva:     200,
 		FechaInicio:   fechaInicio,
 		IDDepto:       depto.IDDepto,
 		FechaFin:      fechaFin,
@@ -42,9 +42,9 @@ func createTestHuesped(t *testing.T) db.Huesped {
 	if err != nil {
 		t.Fatalf("no se pudo crear reserva para huesped: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteReserva(context.Background(), reserva.IDReserva) })
 
 	huesped, err := testQueries.CreateHuesped(context.Background(), db.CreateHuespedParams{
-		IDHuesped:     1,
 		IDReserva:     reserva.IDReserva,
 		Nombre:        "Juan",
 		Apellido:      "Perez",
@@ -55,14 +55,15 @@ func createTestHuesped(t *testing.T) db.Huesped {
 	if err != nil {
 		t.Fatalf("no se pudo crear huesped: %v", err)
 	}
+	t.Cleanup(func() { testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped) })
 	return huesped
 }
 
 func TestCreateHuesped(t *testing.T) {
-	huesped := createTestHuesped(t)
+	huesped := datosTestHuesped(t)
 
-	if huesped.IDHuesped != 1 {
-		t.Errorf("id_huesped incorrecto, esperado 1, got %d", huesped.IDHuesped)
+	if huesped.IDHuesped == 0 {
+		t.Error("id_huesped deberia ser generado por la base de datos")
 	}
 	if huesped.Nombre != "Juan" {
 		t.Errorf("nombre incorrecto, esperado 'Juan', got '%s'", huesped.Nombre)
@@ -73,15 +74,10 @@ func TestCreateHuesped(t *testing.T) {
 	if huesped.Email.String != "juan@test.com" {
 		t.Errorf("email incorrecto, esperado 'juan@test.com', got '%s'", huesped.Email.String)
 	}
-
-	// limpiar
-	testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped)
-	testQueries.DeleteReserva(context.Background(), huesped.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), 200)
 }
 
 func TestGetHuesped(t *testing.T) {
-	huesped := createTestHuesped(t)
+	huesped := datosTestHuesped(t)
 
 	got, err := testQueries.GetHuesped(context.Background(), huesped.IDHuesped)
 	if err != nil {
@@ -93,16 +89,11 @@ func TestGetHuesped(t *testing.T) {
 	if got.Nombre != huesped.Nombre {
 		t.Errorf("nombre incorrecto, esperado '%s', got '%s'", huesped.Nombre, got.Nombre)
 	}
-
-	// limpiar
-	testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped)
-	testQueries.DeleteReserva(context.Background(), huesped.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), 200)
 }
 
 func TestListHuespedes(t *testing.T) {
-	huesped1 := createTestHuesped(t)
-	huesped2 := createTestHuesped(t)
+	datosTestHuesped(t)
+	datosTestHuesped(t)
 
 	huespedes, err := testQueries.ListHuespedes(context.Background())
 	if err != nil {
@@ -111,16 +102,10 @@ func TestListHuespedes(t *testing.T) {
 	if len(huespedes) < 2 {
 		t.Errorf("esperaba al menos 2 huespedes, got %d", len(huespedes))
 	}
-
-	// limpiar
-	testQueries.DeleteHuesped(context.Background(), huesped1.IDHuesped)
-	testQueries.DeleteHuesped(context.Background(), huesped2.IDHuesped)
-	testQueries.DeleteReserva(context.Background(), huesped1.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), 200)
 }
 
 func TestUpdateHuesped(t *testing.T) {
-	huesped := createTestHuesped(t)
+	huesped := datosTestHuesped(t)
 
 	arg := db.UpdateHuespedParams{
 		IDHuesped:     huesped.IDHuesped,
@@ -149,15 +134,10 @@ func TestUpdateHuesped(t *testing.T) {
 	if got.Email.String != "maria@test.com" {
 		t.Errorf("email no se actualizo, esperado 'maria@test.com', got '%s'", got.Email.String)
 	}
-
-	// limpiar
-	testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped)
-	testQueries.DeleteReserva(context.Background(), huesped.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), 200)
 }
 
 func TestDeleteHuesped(t *testing.T) {
-	huesped := createTestHuesped(t)
+	huesped := datosTestHuesped(t)
 
 	err := testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped)
 	if err != nil {
@@ -165,11 +145,7 @@ func TestDeleteHuesped(t *testing.T) {
 	}
 
 	_, err = testQueries.GetHuesped(context.Background(), huesped.IDHuesped)
-	if err == nil {
-		t.Error("esperaba error al obtener huesped eliminado, pero no hubo error")
+	if !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("esperaba sql.ErrNoRows al obtener huesped eliminado, got %v", err)
 	}
-
-	// limpiar
-	testQueries.DeleteReserva(context.Background(), huesped.IDReserva)
-	testQueries.DeleteDepartamento(context.Background(), 200)
 }
