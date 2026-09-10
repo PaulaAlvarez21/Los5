@@ -30,12 +30,6 @@ build: generate
 	@mkdir -p tmp
 	@go build -o tmp/$(APP_NAME) .
 
-test: 
-	build
-	borrar
-	db
-	@go test ./...
-	borrar
 
 clean:
 	@rm -f $(APP_NAME)
@@ -43,3 +37,7 @@ clean:
  
  borrar:
 	@docker compose down -v
+
+
+test: build borrar db
+	@go test ./...
