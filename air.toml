@@ -1,0 +1,7 @@
+root = "."
+tmp_dir = "tmp"
+[build]
+cmd = "make build"
+entrypoint = ["./tmp/Los5"]
+include_ext = ["go", "templ", "sql"]
+exclude_dir = ["tmp", "vendor"]

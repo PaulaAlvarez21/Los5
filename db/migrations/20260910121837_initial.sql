@@ -1,0 +1,6 @@
+-- Create "departamento" table
+CREATE TABLE "departamento" ("id_depto" serial NOT NULL, "nombre" character varying(100) NOT NULL, "direccion" character varying(150) NOT NULL, "disponible" boolean NOT NULL, "limpio" boolean NOT NULL, "descripcion" character varying(500) NULL, PRIMARY KEY ("id_depto"));
+-- Create "reserva" table
+CREATE TABLE "reserva" ("id_reserva" serial NOT NULL, "fecha_inicio" date NOT NULL, "id_depto" integer NOT NULL, "fecha_fin" date NOT NULL, "precio_base" numeric(10,2) NOT NULL, "cant_noches" integer NOT NULL, "descuento" numeric(5,2) NULL, "observaciones" character varying(500) NULL, PRIMARY KEY ("id_reserva"), CONSTRAINT "fk_reserva_depto" FOREIGN KEY ("id_depto") REFERENCES "departamento" ("id_depto") ON UPDATE NO ACTION ON DELETE NO ACTION);
+-- Create "huesped" table
+CREATE TABLE "huesped" ("id_huesped" serial NOT NULL, "id_reserva" integer NOT NULL, "nombre" character varying(50) NOT NULL, "apellido" character varying(50) NOT NULL, "telefono" character varying(50) NULL, "email" character varying(120) NULL, "observaciones" character varying(255) NULL, PRIMARY KEY ("id_huesped"), CONSTRAINT "fk_huesped_reserva" FOREIGN KEY ("id_reserva") REFERENCES "reserva" ("id_reserva") ON UPDATE NO ACTION ON DELETE NO ACTION);
