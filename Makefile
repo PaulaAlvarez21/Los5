@@ -32,12 +32,12 @@ build: generate
 
 
 clean:
-	@rm -f $(APP_NAME)
-	@rm -rf tmp
+	@rm -rf ./tmp
  
  borrar:
 	@docker compose down -v
 
 
-test: build borrar db
-	@go test ./...
+test: build borrar db 
+	@go test -v ./...
+	@rm -rf ./tmp
