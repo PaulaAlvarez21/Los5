@@ -1,4 +1,4 @@
-module Los5.com/ServidorWeb
+module Los5
 
 go 1.26.5
 

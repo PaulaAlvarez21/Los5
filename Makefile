@@ -24,7 +24,7 @@ status:
 
 db:
 	@docker compose up -d
-	@sleep 3
+	@sleep 5
 
 build: generate
 	@mkdir -p tmp
@@ -41,3 +41,4 @@ clean:
 test: build borrar db 
 	@go test -v ./...
 	@rm -rf ./tmp
+	@docker compose down -v

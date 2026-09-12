@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"context"
@@ -6,13 +6,15 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	sqlc "Los5/db/sqlc"
 )
 
-func datosTestHuesped(t *testing.T) Huesped {
+func datosTestHuesped(t *testing.T) sqlc.Huesped {
 	t.Helper()
 
 	// crear departamento dependiente
-	depto, err := testQueries.CreateDepartamento(context.Background(), CreateDepartamentoParams{
+	depto, err := testQueries.CreateDepartamento(context.Background(), sqlc.CreateDepartamentoParams{
 		Nombre:      "Depto Huesped",
 		Direccion:   "Calle Huesped 200",
 		Disponible:  true,
@@ -28,7 +30,7 @@ func datosTestHuesped(t *testing.T) Huesped {
 	fechaInicio := time.Date(2026, 9, 20, 0, 0, 0, 0, time.UTC)
 	fechaFin := time.Date(2026, 9, 25, 0, 0, 0, 0, time.UTC)
 
-	reserva, err := testQueries.CreateReserva(context.Background(), CreateReservaParams{
+	reserva, err := testQueries.CreateReserva(context.Background(), sqlc.CreateReservaParams{
 		FechaInicio:   fechaInicio,
 		IDDepto:       depto.IDDepto,
 		FechaFin:      fechaFin,
@@ -42,7 +44,7 @@ func datosTestHuesped(t *testing.T) Huesped {
 	}
 	t.Cleanup(func() { testQueries.DeleteReserva(context.Background(), reserva.IDReserva) })
 
-	huesped, err := testQueries.CreateHuesped(context.Background(), CreateHuespedParams{
+	huesped, err := testQueries.CreateHuesped(context.Background(), sqlc.CreateHuespedParams{
 		IDReserva:     reserva.IDReserva,
 		Nombre:        "Juan",
 		Apellido:      "Perez",
@@ -105,7 +107,7 @@ func TestListHuespedes(t *testing.T) {
 func TestUpdateHuesped(t *testing.T) {
 	huesped := datosTestHuesped(t)
 
-	arg := UpdateHuespedParams{
+	arg := sqlc.UpdateHuespedParams{
 		IDHuesped:     huesped.IDHuesped,
 		IDReserva:     huesped.IDReserva,
 		Nombre:        "Maria",

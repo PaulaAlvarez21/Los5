@@ -1,15 +1,17 @@
-package db
+package db_test
 
 import (
 	"context"
 	"database/sql"
 	"errors"
 	"testing"
+
+	sqlc "Los5/db/sqlc"
 )
 
-func datosTestDepartamento(t *testing.T) Departamento {
+func datosTestDepartamento(t *testing.T) sqlc.Departamento {
 	t.Helper()
-	arg := CreateDepartamentoParams{
+	arg := sqlc.CreateDepartamentoParams{
 		Nombre:      "Depto Test",
 		Direccion:   "Calle Falsa 123",
 		Disponible:  true,
@@ -78,7 +80,7 @@ func TestListDepartamentos(t *testing.T) {
 func TestUpdateDepartamento(t *testing.T) {
 	depto := datosTestDepartamento(t)
 
-	arg := UpdateDepartamentoParams{
+	arg := sqlc.UpdateDepartamentoParams{
 		IDDepto:     depto.IDDepto,
 		Nombre:      "Depto Actualizado",
 		Direccion:   "Nueva Direccion 456",

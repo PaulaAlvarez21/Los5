@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"context"
@@ -6,13 +6,15 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	sqlc "Los5/db/sqlc"
 )
 
-func datosTestReserva(t *testing.T) Reserva {
+func datosTestReserva(t *testing.T) sqlc.Reserva {
 	t.Helper()
 
 	// crear departamento dependiente primero
-	depto, err := testQueries.CreateDepartamento(context.Background(), CreateDepartamentoParams{
+	depto, err := testQueries.CreateDepartamento(context.Background(), sqlc.CreateDepartamentoParams{
 		Nombre:      "Depto Reserva",
 		Direccion:   "Av. Principal 100",
 		Disponible:  true,
@@ -27,7 +29,7 @@ func datosTestReserva(t *testing.T) Reserva {
 	fechaInicio := time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)
 	fechaFin := time.Date(2026, 9, 15, 0, 0, 0, 0, time.UTC)
 
-	reserva, err := testQueries.CreateReserva(context.Background(), CreateReservaParams{
+	reserva, err := testQueries.CreateReserva(context.Background(), sqlc.CreateReservaParams{
 		FechaInicio:   fechaInicio,
 		IDDepto:       depto.IDDepto,
 		FechaFin:      fechaFin,
@@ -91,7 +93,7 @@ func TestUpdateReserva(t *testing.T) {
 	nuevaFecha := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
 	nuevaFechaFin := time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC)
 
-	arg := UpdateReservaParams{
+	arg := sqlc.UpdateReservaParams{
 		IDReserva:     reserva.IDReserva,
 		FechaInicio:   nuevaFecha,
 		IDDepto:       reserva.IDDepto,

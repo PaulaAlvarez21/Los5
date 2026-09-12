@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"database/sql"
@@ -6,10 +6,12 @@ import (
 	"os"
 	"testing"
 
+	sqlc "Los5/db/sqlc"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-var testQueries *Queries
+var testQueries *sqlc.Queries
 
 func TestMain(m *testing.M) {
 	connStr := "user=user password=password dbname=mydb host=localhost port=5432 sslmode=disable"
@@ -23,7 +25,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("no se pudo hacer ping a la base de datos:", err)
 	}
 
-	testQueries = New(connection)
+	testQueries = sqlc.New(connection)
 	defer connection.Close()
 
 	os.Exit(m.Run())
