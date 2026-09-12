@@ -36,7 +36,12 @@ Proyecto de Programación Web (Los 5): servidor web en Go con acceso a una base 
 Instalar las herramientas de desarrollo (solo una vez por máquina):
 
 ```bash
+sudo apt install docker-compose-plugin #V2
+instalar go
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+instalar make
+
+opcionales:
 curl -sSf https://atlasgo.sh | sh          # o: go install ariga.io/atlas/cmd/atlas@latest
 go install github.com/air-verse/air@latest
 ```
@@ -51,8 +56,6 @@ Levanta la base con Docker y corre los tests:
 make test
 ```
 
-El target `test` hace `docker compose up -d` y después `go test ./...`.
-
 ### Otros comandos útiles
 
 ```bash
@@ -64,6 +67,8 @@ make migrate name=cambios    # genera una migración nueva con Atlas
 make apply      # aplica las migraciones a la base
 make status     # muestra el estado de las migraciones
 make clean      # borra artefactos de build
+make borrar     # borra volumenes del contenedor
+make .env       # copia las credenciales genericas de la plantilla al .env local
 ```
 
 ## Decisiones que fuimos tomando
@@ -92,10 +97,9 @@ make clean      # borra artefactos de build
 
 - **Air para desarrollo**: con `make run` Air observa los archivos, recompila y reinicia solo. El hot reload del navegador no lo maneja (habría que sumar otra herramienta).
 
-## Pendientes
+- **Archivo .env.example**: se creo el archivo .env.example que si se sube al github para permitir que se pueda correr en otras maquinas con las credenciales genericas sin tener que subir nuestro .env local. La automatizacion en Make con el target test copia los valores de ese archivo al .env local de la maquina.
 
-- **Atlas**: los targets del Makefile (`migrate`, `apply`, `status`) están definidos, pero todavía no hay carpeta `db/migrations/` ni migraciones generadas. Falta generar la primera migración con `make migrate`.
-- **Air**: falta crear el `.air.toml` (config de archivos a observar y delegar el build en `make build`); hoy el target `run` solo llama a `air` sin configuración.
+## Pendientes
 
 - **Los tests corren contra la misma base de Docker**: alcanza con `make test` que levanta la DB y corre todo. Si algún día se quiere una base separada para tests, sería el paso a dar (ej. `mydb_test`).
 
@@ -103,9 +107,4 @@ make clean      # borra artefactos de build
 
 Cuando cambiamos el esquema a `SERIAL PRIMARY KEY`, a quien hacía pull le rompían los tests con errores raros (`duplicate key violates ..._pkey` y "id debería ser generado"), aunque la base se levantaba bien. Nos llevó un rato darnos cuenta de qué pasaba. `make test` levanta la base y corre los tests, pero **no** regenera el código de sqlc (eso solo lo hace `make build`). Como ese código generado **no se versiona** (está en `.gitignore`), la persona que hizo pull seguía compilando con sus `.go` locales, que eran de la versión anterior del esquema.
 
-No era un problema de la base ni de los tests, sino de que el código de sqlc local estaba desactualizado. Lo resolvimos regenerando a mano con `sqlc generate` y ahí sí, `make test` pasó.
-
-## Consultas
-
- - ¿Incluimos la instalacion de las herramientas de desarrollo en el makefile? (por ahora no los incorporamos)
- - ¿los tests van en raiz o dentro de db/sqlc/? (por ahora los dejamos dentro de db/sqlc)
+No era un problema de la base ni de los tests, sino de que el código de sqlc local estaba desactualizado. Lo resolvimos regenerando a mano con `sqlc generate` y ahí sí, `make test` pasó. Ahora con la incorporacion de herramientas de desarrollo esto no deberia volver a suceder.

@@ -34,11 +34,14 @@ build: generate
 clean:
 	@rm -rf ./tmp
  
- borrar:
+borrar:
 	@docker compose down -v
 
 
-test: build borrar db 
+.env:
+	cp .env.example .env
+
+test: .env build borrar db 
 	@go test -v ./...
 	@rm -rf ./tmp
 	@docker compose down -v
