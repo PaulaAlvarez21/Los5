@@ -1,6 +1,8 @@
 # Los5
 
-Proyecto de Programación Web (Los 5): servidor web en Go con acceso a una base de datos PostgreSQL usando **sqlc** para generar el código de acceso a datos.
+El proyecto es un gestor de reservas de alojamientos temporales: los administradores de la empresa "Los 5" podrán usarlo para gestionar el alquiler de sus departamentos.
+
+En esta instancia del proyecto, se implementa la capa de acceso a datos en Go sobre una base de datos PostgreSQL, usando **sqlc** para generar el código Go tipado a partir de las queries SQL. Incluye tests que corren contra la base real levantada con Docker.
 
 ## Stack
 
@@ -19,9 +21,9 @@ Proyecto de Programación Web (Los 5): servidor web en Go con acceso a una base 
 ├── db/
 │   ├── queries/        # queries SQL que sqlc convierte en funciones Go
 │   ├── schema/         # esquema deseado de la base (source de verdad)
-│   └── sqlc/           # código Go generado por sqlc + los tests del paquete
-│       ├── *_test.go   # tests de acceso a datos (se versionan)
-│       └── *.go        # código generado por sqlc (no se edita ni versiona) 
+│   ├── sqlc/           # código Go generado por sqlc (no se edita ni versiona)
+│   └── testing/        # tests de acceso a datos (se versionan)
+│       └── *_test.go   # paquete externo db_test que importa Los5/db/sqlc
 ├── Makefile            # automatiza build, test, migraciones, etc.
 ├── docker-compose.yaml # base de datos PostgreSQL
 ├── sqlc.yaml           # config de sqlc
@@ -36,13 +38,26 @@ Proyecto de Programación Web (Los 5): servidor web en Go con acceso a una base 
 Instalar las herramientas de desarrollo (solo una vez por máquina):
 
 ```bash
+# instalacion docker compose
 sudo apt install docker-compose-plugin #V2
-instalar go
+
+# instalacion go (versión estable de https://go.dev/dl — ajustá la versión según tu arquitectura)
+wget https://go.dev/dl/go1.26.5.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.26.5.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+source ~/.bashrc
+
+#instalacion de sqlc
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-instalar make
+
+#instalacion de la herramienta make
+sudo apt install make
 
 opcionales:
-curl -sSf https://atlasgo.sh | sh          # o: go install ariga.io/atlas/cmd/atlas@latest
+#atlas
+curl -sSf https://atlasgo.sh | sh  # o: go install ariga.io/atlas/cmd/atlas@latest
+#air
 go install github.com/air-verse/air@latest
 ```
 
@@ -85,9 +100,9 @@ make .env       # copia las credenciales genericas de la plantilla al .env local
 
 - **Verificación del borrado con `sql.ErrNoRows`**: en los tests de `Delete`, al volver a pedir el registro eliminado, se espera exactamente `sql.ErrNoRows` (y no "cualquier error"), igual que en las filminas. Así distinguimos "no existe" de un error real de conexión.
 
-- **Tests adentro de `db/sqlc/`**: los tests viven en la misma carpeta que el código generado, como tests internos del paquete `db` (sin prefijo `db.`), para que `go test ./...` los encuentre dentro del paquete donde están las queries. La raíz del proyecto queda sin tests.
+- **Tests afuera en `db/testing/`**: los tests no viven en la misma carpeta que el código generado sino en `db/testing/`, como paquete de test externo (`package db_test`) que importa `Los5/db/sqlc` y antepone `sqlc.` a los símbolos del paquete. Así `go test ./...` los encuentra (los descubre solo por el patrón `./...`) y el código generado por sqlc queda intacto y sin tocar.
 
-- **Solo se versionan los tests, no el código generado**: `.gitignore` ignora los `.go` de `db/sqlc/` (los regenera `sqlc generate`), pero re-incluye los `_test.go` con una regla de negación (`!`). Así se versionan y revisan los tests, y el código generado se mantiene fuera del repo.
+- **Solo se versionan los tests, no el código generado**: `.gitignore` ignora los `.go` de `db/sqlc/` (los regenera `sqlc generate`), mientras que los tests viven en `db/testing/`, que no está ignorado. Así se versionan y revisan los tests, y el código generado se mantiene fuera del repo.
 
 - **PostgreSQL 18 con montaje en `/var/lib/postgresql`**: las imágenes de postgres 18+ cambiaron dónde guardan los datos, así que el volumen se monta en `/var/lib/postgresql` (en vez de `/var/lib/postgresql/data`) para evitar el error de "unused mount/volume".
 
