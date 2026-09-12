@@ -39,6 +39,7 @@ borrar:
 
 
 .env:
+	@test -f .env ||
 	cp .env.example .env
 
 test: .env build borrar db 

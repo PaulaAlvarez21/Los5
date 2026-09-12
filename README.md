@@ -97,7 +97,7 @@ make .env       # copia las credenciales genericas de la plantilla al .env local
 
 - **Air para desarrollo**: con `make run` Air observa los archivos, recompila y reinicia solo. El hot reload del navegador no lo maneja (habría que sumar otra herramienta).
 
-- **Archivo .env.example**: se creo el archivo .env.example que si se sube al github para permitir que se pueda correr en otras maquinas con las credenciales genericas sin tener que subir nuestro .env local. La automatizacion en Make con el target test copia los valores de ese archivo al .env local de la maquina.
+- **Archivo .env.example**: se creo el archivo .env.example que si se sube al github para permitir que se pueda correr en otras maquinas con las credenciales genericas sin tener que subir nuestro .env local ni nuestros secretos. La automatizacion en Make con el target .env verifica si existe o no un .env y si no existe copia los valores de ese archivo plantilla al .env local de la maquina.
 
 ## Pendientes
 
