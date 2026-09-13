@@ -25,7 +25,7 @@ En esta instancia del proyecto, se implementa la capa de acceso a datos en Go so
 │   └── testing/        # tests de acceso a datos (se versionan)
 │       └── *_test.go   # paquete externo db_test que importa Los5/db/sqlc
 ├── Makefile            # automatiza build, test, migraciones, etc.
-├── docker-compose.yaml # base de datos PostgreSQL
+├── docker-compose.yaml # integra base de datos PostgreSQL
 ├── sqlc.yaml           # config de sqlc
 ```
 
