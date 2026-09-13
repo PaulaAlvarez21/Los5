@@ -10,6 +10,7 @@ import (
 	sqlc "Los5/db/sqlc"
 )
 
+// crea una reserva de prueba
 func datosTestReserva(t *testing.T) sqlc.Reserva {
 	t.Helper()
 

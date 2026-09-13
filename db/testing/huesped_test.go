@@ -10,6 +10,7 @@ import (
 	sqlc "Los5/db/sqlc"
 )
 
+// crea un huesped de prueba
 func datosTestHuesped(t *testing.T) sqlc.Huesped {
 	t.Helper()
 

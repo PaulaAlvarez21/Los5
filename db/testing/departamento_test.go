@@ -9,6 +9,7 @@ import (
 	sqlc "Los5/db/sqlc"
 )
 
+// crea un departamento de prueba
 func datosTestDepartamento(t *testing.T) sqlc.Departamento {
 	t.Helper()
 	arg := sqlc.CreateDepartamentoParams{
