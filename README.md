@@ -41,12 +41,8 @@ Instalar las herramientas de desarrollo (solo una vez por máquina):
 # instalacion docker compose
 sudo apt install docker-compose-plugin #V2
 
-# instalacion go (versión estable de https://go.dev/dl — ajustá la versión según tu arquitectura)
-wget https://go.dev/dl/go1.26.5.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.26.5.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-source ~/.bashrc
+# instalacion go 
+sudo apt install golang-go
 
 #instalacion de sqlc
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
