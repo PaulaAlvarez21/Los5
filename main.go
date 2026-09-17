@@ -12,8 +12,6 @@ var queries *sqlc.Queries
 
 func main() {
 
-<<<<<<< HEAD
-=======
 	// 1. Conectarse a PostgreSQL
 
 	connStr := "user=user password=password dbname=mydb host=localhost port=5432 sslmode=disable"
@@ -38,5 +36,4 @@ func main() {
 
 	// 5. Iniciar el servidor HTTP
 
->>>>>>> b13c8f865268a479d764810bdb82a45046ce7b02
 }
