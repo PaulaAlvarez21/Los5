@@ -10,6 +10,4 @@ package repositorios
 
 	_ "github.com/jackc/pgx/v5/stdlib"*/
 
-type Repository interface {
-	//Crud que obtenga de la base
-}
+agregar puntero a queries
