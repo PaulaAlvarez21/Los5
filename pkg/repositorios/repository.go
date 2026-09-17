@@ -1,2 +1,0 @@
-type 
-attributo: queries
