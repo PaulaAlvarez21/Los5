@@ -10,23 +10,28 @@ type ReservasRepository struct {
 	query *sqlc.Queries
 }
 
+// no se si esto esta bien, es para que esto funcione en el service sin poner sqlc.Queries en el service
+type CreateReserva = sqlc.CreateReservaParams
+type Reserva = sqlc.Reserva
+type UpdateReserva = sqlc.UpdateReservaParams
+
 func NewReservasRepository(queries *sqlc.Queries) *ReservasRepository {
 	return &ReservasRepository{query: queries}
 }
 
-func (r *ReservasRepository) CreateReserva(ctx context.Context, arg sqlc.CreateReservaParams) (sqlc.Reserva, error) {
+func (r *ReservasRepository) CreateReserva(ctx context.Context, arg CreateReserva) (Reserva, error) {
 	return r.query.CreateReserva(ctx, arg)
 }
 
-func (r *ReservasRepository) GetReserva(ctx context.Context, id int32) (sqlc.Reserva, error) {
+func (r *ReservasRepository) GetReserva(ctx context.Context, id int32) (Reserva, error) {
 	return r.query.GetReserva(ctx, id)
 }
 
-func (r *ReservasRepository) ListReservas(ctx context.Context) ([]sqlc.Reserva, error) {
+func (r *ReservasRepository) ListReservas(ctx context.Context) ([]Reserva, error) {
 	return r.query.ListReservas(ctx)
 }
 
-func (r *ReservasRepository) UpdateReserva(ctx context.Context, arg sqlc.UpdateReservaParams) error {
+func (r *ReservasRepository) UpdateReserva(ctx context.Context, arg UpdateReserva) error {
 	return r.query.UpdateReserva(ctx, arg)
 }
 

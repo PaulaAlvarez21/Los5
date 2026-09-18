@@ -18,9 +18,6 @@ func CrearReservaHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *ReservaHandler) ObtenerReservasHandler(w http.ResponseWriter, r *http.Request) {
 
-}
-
-func ObtenerReservaHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 
 	id, err := strconv.Atoi(parts[2])
@@ -29,7 +26,7 @@ func ObtenerReservaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reserva, err := h.reservaService.ObtenerReserva(id)
+	reserva, err := h.reservaService.ObtenerReserva(int32(id))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
