@@ -12,7 +12,7 @@ type ReservaHandler struct {
 	reservaService *logica.ReservaService
 }
 
-func newReservaHandler(reservaService *logica.ReservaService) *ReservaHandler {
+func NewReservaHandler(reservaService *logica.ReservaService) *ReservaHandler {
 	return &ReservaHandler{reservaService: reservaService}
 }
 
