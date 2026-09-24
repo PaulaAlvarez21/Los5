@@ -16,7 +16,7 @@ func main() {
 
 	// 1. Conectarse a PostgreSQL
 
-	connStr := "user=user password=password dbname=mydb host=localhost port=5432 sslmode=disable"
+	connStr := "user=user password=password dbname=mydb host=localhost port=5432 sslmode=disable" //quitar hardcodeado, poner variables de entorno
 
 	connection, err := sql.Open("pgx", connStr)
 	if err != nil {

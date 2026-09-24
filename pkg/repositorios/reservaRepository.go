@@ -3,6 +3,7 @@ package repositorios
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	sqlc "Los5/db/sqlc"
 	"Los5/pkg/dominio"
@@ -36,6 +37,9 @@ func (r *ReservasRepository) CreateReserva(ctx context.Context, reserva dominio.
 func (r *ReservasRepository) GetReserva(ctx context.Context, id int32) (dominio.Reserva, error) {
 	reservaDB, err := r.query.GetReserva(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) { //traduce error de sql a error de dominio
+			return dominio.Reserva{}, dominio.NotFoundError()
+		}
 		return dominio.Reserva{}, err
 	}
 	return toDominioReserva(reservaDB), nil
@@ -68,7 +72,7 @@ func (r *ReservasRepository) UpdateReserva(ctx context.Context, reserva dominio.
 }
 
 func (r *ReservasRepository) DeleteReserva(ctx context.Context, id int32) error {
-	return r.query.DeleteReserva(ctx, id)
+	return r.query.DeleteReserva(ctx, id) //aca no hacemos tartamiento de error not found 404 de si no existe, poruqe si quiere borrar algo que no existe, no es un error, simplemente no hace nada.
 }
 
 // conversiones de tipos

@@ -1,2 +1,3 @@
 /db/sqlc/*.go
 .env
+AGENTS.md 
