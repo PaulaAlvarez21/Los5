@@ -67,11 +67,11 @@ func main() {
 	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.DeleteHuesped)
 
 	// Reservas
-	http.HandleFunc("GET /reservas", reservasHandler.GetReservas)
-	http.HandleFunc("GET /reservas/{id}", reservasHandler.GetReserva)
-	http.HandleFunc("POST /reservas", reservasHandler.CreateReserva)
-	http.HandleFunc("PUT /reservas/{id}", reservasHandler.UpdateReserva)
-	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.DeleteReserva)
+	http.HandleFunc("GET /reservas", reservasHandler.ObtenerReservas)
+	http.HandleFunc("GET /reservas/{id}", reservasHandler.ObtenerReserva)
+	http.HandleFunc("POST /reservas", reservasHandler.CrearReserva)
+	http.HandleFunc("PUT /reservas/{id}", reservasHandler.ActualizarReserva)
+	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReserva)
 
 	// 7. Iniciar el servidor HTTP
 
