@@ -53,18 +53,18 @@ func main() {
 	// 6. Configurar las rutas
 
 	// Departamentos
-	http.HandleFunc("GET /departamentos", deptosHandler.GetDepartamentos)
-	http.HandleFunc("GET /departamentos/{id}", deptosHandler.GetDepartamento)
-	http.HandleFunc("POST /departamentos", deptosHandler.CreateDepartamento)
-	http.HandleFunc("PUT /departamentos/{id}", deptosHandler.UpdateDepartamento)
-	http.HandleFunc("DELETE /departamentos/{id}", deptosHandler.DeleteDepartamento)
+	http.HandleFunc("GET /departamentos", deptosHandler.ObtenerDepartamentos)
+	http.HandleFunc("GET /departamentos/{id}", deptosHandler.ObtenerDepartamento)
+	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamento)
+	http.HandleFunc("PUT /departamentos/{id}", deptosHandler.ActualizarDepartamento)
+	http.HandleFunc("DELETE /departamentos/{id}", deptosHandler.EliminarDepartamento)
 
 	// Huéspedes
-	http.HandleFunc("GET /huespedes", huespedesHandler.GetHuespedes)
-	http.HandleFunc("GET /huespedes/{id}", huespedesHandler.GetHuesped)
-	http.HandleFunc("POST /huespedes", huespedesHandler.CreateHuesped)
-	http.HandleFunc("PUT /huespedes/{id}", huespedesHandler.UpdateHuesped)
-	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.DeleteHuesped)
+	http.HandleFunc("GET /huespedes", huespedesHandler.ObtenerHuespedes)
+	http.HandleFunc("GET /huespedes/{id}", huespedesHandler.ObtenerHuesped)
+	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuesped)
+	http.HandleFunc("PUT /huespedes/{id}", huespedesHandler.ActualizarHuesped)
+	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.EliminarHuesped)
 
 	// Reservas
 	http.HandleFunc("GET /reservas", reservasHandler.ObtenerReservas)
