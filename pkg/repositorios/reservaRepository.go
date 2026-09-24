@@ -89,6 +89,7 @@ func toDominioReserva(reservaDB sqlc.Reserva) dominio.Reserva {
 	}
 }
 
+// metodos generales usados en reservarepository, huespedesrepository y departamentosrepository, para convertir de sql.NullString a *string y viceversa, para poder usar punteros en los structs de dominio y que sean nulos en la base de datos.
 func toNullString(s *string) sql.NullString {
 	if s == nil {
 		return sql.NullString{}
