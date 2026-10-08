@@ -52,17 +52,17 @@ POST http://localhost:8080/reservas
 Content-Type: application/json
 {
   "id_depto": 1,
-  "fecha_inicio": "2026-11-01",
-  "fecha_fin": "2026-11-05",
-  "precio_base": 15000.00,
+  "fecha_inicio": "2026-11-01T00:00:00Z",
+  "fecha_fin": "2026-11-05T00:00:00Z",
+  "precio_base": "15000.00",
   "cant_noches": 4,
-  "descuento": 0.00,
+  "descuento": "0.00",
   "observaciones": "reserva nueva"
 }
 HTTP 201
 [Asserts]
 jsonpath "$.id_reserva" isInteger
-jsonpath "$.precio_base" == 15000.00
+jsonpath "$.precio_base" == "15000.00"
 jsonpath "$.observaciones" == "reserva nueva"
 
 # Listar reservas (GET)
@@ -71,7 +71,7 @@ HTTP 200
 [Asserts]
 jsonpath "$.length()" > 0
 jsonpath "$[0].id_depto" == 1
-jsonpath "$[0].precio_base" == 15000.00
+jsonpath "$[0].precio_base" == "15000.00"
 jsonpath "$[0].observaciones" == "reserva nueva"
 
 # Obtener reserva por ID (GET)
@@ -79,7 +79,7 @@ GET http://localhost:8080/reservas/1
 HTTP 200
 [Asserts]
 jsonpath "$.id_depto" == 1
-jsonpath "$.precio_base" == 15000.00
+jsonpath "$.precio_base" == "15000.00"
 jsonpath "$.observaciones" == "reserva nueva"
 
 # Actualizar reserva (PUT)
@@ -87,16 +87,16 @@ PUT http://localhost:8080/reservas/1
 Content-Type: application/json
 {
   "id_depto": 1,
-  "fecha_inicio": "2026-11-01",
-  "fecha_fin": "2026-11-05",
-  "precio_base": 18000.00,
+  "fecha_inicio": "2026-11-01T00:00:00Z",
+  "fecha_fin": "2026-11-05T00:00:00Z",
+  "precio_base": "18000.00",
   "cant_noches": 4,
-  "descuento": 1000.00,
+  "descuento": "1000.00",
   "observaciones": "reserva actualizada"
 }
 HTTP 200
 [Asserts]
-jsonpath "$.precio_base" == 18000.00
+jsonpath "$.precio_base" == "18000.00"
 jsonpath "$.observaciones" == "reserva actualizada"
 
 
@@ -113,7 +113,7 @@ Content-Type: application/json
   "apellido": "Gonzalez",
   "telefono": "2494123456",
   "email": "maria@example.com",
-  "observacion": "Sin observaciones"
+  "observaciones": "Sin observaciones"
 }
 HTTP 201
 [Asserts]
@@ -144,7 +144,7 @@ Content-Type: application/json
   "apellido": "Gonzalez Actualizada",
   "telefono": "2494123456",
   "email": "maria@example.com",
-  "observacion": "Datos actualizados"
+  "observaciones": "Datos actualizados"
 }
 HTTP 200
 [Asserts]
