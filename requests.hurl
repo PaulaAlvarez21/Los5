@@ -19,7 +19,7 @@ jsonpath "$.nombre" == "Departamento Centro"
 GET http://localhost:8080/departamentos
 HTTP 200
 [Asserts]
-jsonpath "$.length()" > 0
+jsonpath "$[*]" count > 0
 jsonpath "$[0].nombre" == "Departamento Centro"
 
 # Obtener departamento por ID (GET)
@@ -69,7 +69,7 @@ jsonpath "$.observaciones" == "reserva nueva"
 GET http://localhost:8080/reservas
 HTTP 200
 [Asserts]
-jsonpath "$.length()" > 0
+jsonpath "$[*]" count > 0
 jsonpath "$[0].id_depto" == 1
 jsonpath "$[0].precio_base" == "15000.00"
 jsonpath "$[0].observaciones" == "reserva nueva"
@@ -124,7 +124,7 @@ jsonpath "$.nombre" == "Maria"
 GET http://localhost:8080/huespedes
 HTTP 200
 [Asserts]
-jsonpath "$.length()" > 0
+jsonpath "$[*]" count > 0
 jsonpath "$[0].nombre" == "Maria"
 jsonpath "$[0].apellido" == "Gonzalez"
 

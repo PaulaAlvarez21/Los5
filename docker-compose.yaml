@@ -1,8 +1,6 @@
 services:
   compilacion-go:
     build: .
-    ports: 
-      - "8080:8080"
       #nuestro servidor esta escuchando en el puerto 8080 segun el main.go
     depends_on:
       - database
