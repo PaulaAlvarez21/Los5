@@ -1,7 +1,7 @@
 APP_NAME := Los5
 DB_URL := postgres://user:password@localhost:5432/mydb?sslmode=disable
 
-.PHONY: all run generate migrate apply status build test clean db
+.PHONY: all run generate migrate apply status build test test-api clean db
 
 all: build
 
@@ -46,3 +46,12 @@ test: .env build borrar db
 	@go test -v ./...
 	@rm -rf ./tmp
 	@docker compose down -v
+
+test-api: .env build borrar db
+	@./tmp/$(APP_NAME) & echo $$! > tmp/server.pid; \
+	sleep 3; \
+	hurl --test requests.hurl; status=$$?; \
+	kill $$(cat tmp/server.pid) 2>/dev/null; \
+	rm -rf ./tmp; \
+	docker compose down -v; \
+	exit $$status
