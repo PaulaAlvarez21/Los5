@@ -23,8 +23,7 @@ status:
 	atlas migrate status --dir "file://db/migrations" --url "$(DB_URL)"
 
 db:
-	@docker compose up -d
-	@sleep 5
+	@docker compose up -d --wait database
 
 build: generate
 	@mkdir -p tmp

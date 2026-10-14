@@ -3,7 +3,7 @@ services:
     build: .
       #nuestro servidor esta escuchando en el puerto 8080 segun el main.go
     depends_on:
-      - database
+      - database #condition: status: "healthy"
       
   database:
     image: postgres:18
@@ -21,7 +21,12 @@ services:
       #ejecuta automáticamente los .sql que encuentre en /docker-entrypoint-initdb.d/.
       #solo se ejecuta cuando el volumen de datos está vacío (primera vez o después de docker compose down -v). Si ya tenés datos y hacés docker compose up, PostgreSQL ve que el volumen no está vacío y no ejecuta nada.
 #Podemos aprovechar esa dinamica de postgres porque el código ya depende de PostgreSQL — el go.mod usa github.com/jackc/pgx/v5 como driver y el TestMain se conecta directamente a PostgreSQL.
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
 
 volumes:
   postgres_data:
