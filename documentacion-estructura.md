@@ -185,3 +185,47 @@ Notas:
 | `repositorios` | Traducir `dominio ↔ sqlc`, ejecutar queries, mapear errores de DB | No conoce HTTP ni reglas de negocio |
 | `db/sqlc` | Queries generadas contra la base | Código generado, no se toca a mano |
 | `pkg/dominio` | Structs de entidades y errores compartidos | Reglas de negocio (aunque puede pasar DTOs) |
+
+---
+
+## 6. API REST y pruebas
+
+Sobre las capas anteriores, `main.go` registra las rutas con el router de `net/http` (Go 1.22+), que permite declarar el método en el patrón (`"POST /reservas"`) y leer parámetros de ruta con `r.PathValue("id")`.
+
+Cada ruta apunta directo al método del handler correspondiente:
+
+| Método | Ruta | Handler | Service (logica) | Repositorio |
+|---|---|---|---|---|
+| GET | `/departamentos` | `DepartamentoHandler.ObtenerDepartamentos` | `DepartamentoService.ObtenerDepartamentos` | `DepartamentosRepository.ListDepartamentos` |
+| GET | `/departamentos/{id}` | `DepartamentoHandler.ObtenerDepartamento` | `DepartamentoService.ObtenerDepartamento` | `DepartamentosRepository.GetDepartamento` |
+| POST | `/departamentos` | `DepartamentoHandler.CrearDepartamento` | `DepartamentoService.CrearDepartamento` | `DepartamentosRepository.CreateDepartamento` |
+| PUT | `/departamentos/{id}` | `DepartamentoHandler.ActualizarDepartamento` | `DepartamentoService.ActualizarDepartamento` | `DepartamentosRepository.UpdateDepartamento` |
+| DELETE | `/departamentos/{id}` | `DepartamentoHandler.EliminarDepartamento` | `DepartamentoService.EliminarDepartamento` | `DepartamentosRepository.DeleteDepartamento` |
+| GET | `/huespedes` | `HuespedHandler.ObtenerHuespedes` | `HuespedService.ObtenerHuespedes` | `HuespedRepository.ListHuespedes` |
+| GET | `/huespedes/{id}` | `HuespedHandler.ObtenerHuesped` | `HuespedService.ObtenerHuesped` | `HuespedRepository.GetHuesped` |
+| POST | `/huespedes` | `HuespedHandler.CrearHuesped` | `HuespedService.CrearHuesped` | `HuespedRepository.CreateHuesped` |
+| PUT | `/huespedes/{id}` | `HuespedHandler.ActualizarHuesped` | `HuespedService.ActualizarHuesped` | `HuespedRepository.UpdateHuesped` |
+| DELETE | `/huespedes/{id}` | `HuespedHandler.EliminarHuesped` | `HuespedService.EliminarHuesped` | `HuespedRepository.DeleteHuesped` |
+| GET | `/reservas` | `ReservaHandler.ObtenerReservas` | `ReservaService.ObtenerReservas` | `ReservasRepository.ListReservas` |
+| GET | `/reservas/{id}` | `ReservaHandler.ObtenerReserva` | `ReservaService.ObtenerReserva` | `ReservasRepository.GetReserva` |
+| POST | `/reservas` | `ReservaHandler.CrearReserva` | `ReservaService.CrearReserva` | `ReservasRepository.CreateReserva` |
+| PUT | `/reservas/{id}` | `ReservaHandler.ActualizarReserva` | `ReservaService.ActualizarReserva` | `ReservasRepository.UpdateReserva` |
+| DELETE | `/reservas/{id}` | `ReservaHandler.EliminarReserva` | `ReservaService.EliminarReserva` | `ReservasRepository.DeleteReserva` |
+
+El recorrido de una request es siempre el mismo:
+
+```
+HTTP request
+   → handler (decode JSON + PathValue)   → service (validaciones)   → repositorio (dominio ↔ sqlc)   → db/sqlc
+   ← handler (encode JSON + status)      ← service (AppError si falla) ← repositorio (mapea sql.ErrNoRows)
+```
+
+### Pruebas de endpoints
+
+Los endpoints se prueban con **HURL** desde el archivo `requests.hurl`, que declara cada request con su código HTTP esperado y `[Asserts]` sobre el JSON de respuesta. `make test-api` orquesta todo el ciclo:
+
+1. **Previas**: `.env`, `sqlc generate` + compilación, `docker compose down -v`, `docker compose up -d --wait database` (espera el healthcheck) y levantar la app local.
+2. **Prueba**: `hurl --test requests.hurl` recorre los 15 endpoints.
+3. **Posteriores**: matar la app y `docker compose down -v`.
+
+`hurl --test` devuelve un exit code distinto de 0 si algún assert falla, por lo que el comando es apto para CI. El detalle de uso está en el `README.md`.

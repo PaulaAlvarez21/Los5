@@ -6,8 +6,10 @@ import (
 	logica "Los5/pkg/logica"
 	repo "Los5/pkg/repositorios"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -16,7 +18,7 @@ func main() {
 
 	// 1. Conectarse a PostgreSQL
 
-	connStr := "user=user password=password dbname=mydb host=localhost port=5432 sslmode=disable"
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=localhost port=5432 sslmode=disable", os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
 
 	connection, err := sql.Open("pgx", connStr)
 	if err != nil {

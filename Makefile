@@ -38,8 +38,9 @@ borrar:
 
 
 .env:
-	@test -f .env ||
-	cp .env.example .env
+	@if [ ! -f .env ]; then \
+        cp .env.example .env; \
+    fi
 
 test: .env build borrar db 
 	@go test -v ./...
@@ -47,7 +48,8 @@ test: .env build borrar db
 	@docker compose down -v
 
 test-api: .env build borrar db
-	@./tmp/$(APP_NAME) & echo $$! > tmp/server.pid; \
+	@set -a; . ./.env; set +a; \
+	./tmp/$(APP_NAME) & echo $$! > tmp/server.pid; \
 	sleep 3; \
 	hurl --test requests.hurl; status=$$?; \
 	kill $$(cat tmp/server.pid) 2>/dev/null; \

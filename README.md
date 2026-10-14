@@ -2,31 +2,44 @@
 
 El proyecto es un gestor de reservas de alojamientos temporales: los administradores de la empresa "Los 5" podrán usarlo para gestionar el alquiler de sus departamentos.
 
-En esta instancia del proyecto, se implementa la capa de acceso a datos en Go sobre una base de datos PostgreSQL, usando **sqlc** para generar el código Go tipado a partir de las queries SQL. Incluye tests que corren contra la base real levantada con Docker.
+En esta entrega (**TP3**) el proyecto expone una **API REST** sobre esa base de datos. El servidor está escrito en Go con `net/http` de la librería estándar y separa la aplicación en capas (`handlers → logica → repositorios → db/sqlc`), usando **structs de dominio** como contrato entre ellas. La capa de acceso a datos sigue generándose con **sqlc** a partir de queries SQL, y los endpoints se prueban de punta a punta con **HURL**.
+
+La arquitectura en capas está explicada en detalle en [`documentacion-estructura.md`](./documentacion-estructura.md).
 
 ## Stack
 
-- **Go** (backend)
+- **Go** (backend, `net/http` de la STL)
 - **PostgreSQL** (base de datos)
 - **sqlc** (genera el Go tipado a partir de las queries SQL)
 - **Atlas** (migraciones de esquema)
 - **Air** (recompilación automática en desarrollo)
 - **Docker Compose** (levanta la base de datos)
+- **HURL** (prueba los endpoints de la API)
 - **make** (orquesta todo el flujo)
 
 ## Estructura
 
 ```
 .
+├── main.go                 # cableado de capas y registro de rutas HTTP
+├── pkg/
+│   ├── dominio/            # structs de entidades y AppError (contrato entre capas)
+│   ├── handlers/           # lee/decodifica JSON y responde códigos HTTP
+│   ├── logica/             # reglas de negocio y validaciones (services)
+│   └── repositorios/       # traduce dominio ↔ sqlc y ejecuta las queries
 ├── db/
-│   ├── queries/        # queries SQL que sqlc convierte en funciones Go
-│   ├── schema/         # esquema deseado de la base (source de verdad)
-│   ├── sqlc/           # código Go generado por sqlc (no se edita ni versiona)
-│   └── testing/        # tests de acceso a datos (se versionan)
-│       └── *_test.go   # paquete externo db_test que importa Los5/db/sqlc
-├── Makefile            # automatiza build, test, migraciones, etc.
-├── docker-compose.yaml # integra base de datos PostgreSQL
-├── sqlc.yaml           # config de sqlc
+│   ├── queries/            # queries SQL que sqlc convierte en funciones Go
+│   ├── schema/             # esquema deseado de la base (source de verdad)
+│   ├── sqlc/               # código Go generado por sqlc (no se edita ni versiona)
+│   └── testing/            # tests de acceso a datos (se versionan)
+│       └── *_test.go       # paquete externo db_test que importa Los5/db/sqlc
+├── requests.hurl           # pruebas de cada endpoint de la API (HURL)
+├── documentacion-estructura.md  # explicación de las capas
+├── Makefile                # automatiza build, test, test-api, migraciones, etc.
+├── docker-compose.yaml     # integra base de datos PostgreSQL
+├── sqlc.yaml               # config de sqlc
+├── Dockerfile              # build de la app en dos etapas
+└── air.toml                # config de Air (hot reload)
 ```
 
 ## Cómo correr
@@ -41,7 +54,7 @@ Instalar las herramientas de desarrollo (solo una vez por máquina):
 # instalacion docker compose
 sudo apt install docker-compose-plugin #V2
 
-# instalacion go 
+# instalacion go
 sudo apt install golang-go
 
 #instalacion de sqlc
@@ -49,6 +62,10 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 #instalacion de la herramienta make
 sudo apt install make
+
+#instalacion de HURL (para probar los endpoints)
+sudo apt install hurl            # Debian/Ubuntu
+# alternativas: brew install hurl  /  snap install hurl  /  cargo install hurl
 
 opcionales:
 #atlas
@@ -59,9 +76,33 @@ go install github.com/air-verse/air@latest
 
 Asegurate de tener `$(go env GOPATH)/bin` en el `PATH`.
 
-### Ejecutar los tests
+### Probar la API (TP3)
 
-Levanta la base con Docker y corre los tests:
+El objetivo de la consigna es: se clona el repo, se entra a la branch `tp3` y con **un solo comando** se levanta todo, se prueban los endpoints y se limpia. Ese comando es:
+
+```bash
+git clone <URL-del-repo>
+cd Los5
+git checkout tp3
+make test-api
+```
+
+`make test-api` encadena todas las tareas necesarias, en este orden:
+
+1. **`.env`** → si no existe, copia `.env.example` (credenciales genéricas) a `.env`.
+2. **Tareas previas**
+   - `build` → ejecuta `sqlc generate` (regenera el código tipado) y compila el binario en `tmp/Los5`.
+   - `borrar` → `docker compose down -v` (borra contenedores **y volúmenes**, para arrancar de cero).
+   - `db` → `docker compose up -d --wait database` (levanta la base y **espera** a que el healthcheck pase).
+   - Levanta la aplicación (`./tmp/Los5`) con las variables del `.env`.
+3. **Prueba de los endpoints** → `hurl --test requests.hurl` recorre cada endpoint y valida método, código HTTP y cuerpo.
+4. **Tareas posteriores** → mata la app, borra `tmp/` y hace `docker compose down -v` (borra contenedores y volúmenes).
+
+Si HURL reporta algún fallo, el comando termina con error (`exit status` distinto de 0), así sirve tal cual para CI.
+
+### Ejecutar los tests de acceso a datos
+
+Para correr solo los tests de la base (paquete `db/testing`):
 
 ```bash
 make test
@@ -82,9 +123,59 @@ make borrar     # borra volumenes del contenedor
 make .env       # copia las credenciales genericas de la plantilla al .env local
 ```
 
+## API REST
+
+El servidor escucha en `http://localhost:8080`. Todas las entidades exponen el mismo CRUD.
+
+| Entidad        | Método | Ruta                  | Descripción                       | Éxito |
+|----------------|--------|-----------------------|-----------------------------------|-------|
+| Departamentos  | GET    | `/departamentos`      | Lista todos los departamentos     | 200   |
+| Departamentos  | GET    | `/departamentos/{id}` | Obtiene un departamento por ID    | 200   |
+| Departamentos  | POST   | `/departamentos`      | Crea un departamento              | 201   |
+| Departamentos  | PUT    | `/departamentos/{id}` | Actualiza un departamento         | 200   |
+| Departamentos  | DELETE | `/departamentos/{id}` | Elimina un departamento           | 204   |
+| Huéspedes      | GET    | `/huespedes`          | Lista todos los huéspedes         | 200   |
+| Huéspedes      | GET    | `/huespedes/{id}`     | Obtiene un huésped por ID         | 200   |
+| Huéspedes      | POST   | `/huespedes`          | Crea un huésped                   | 201   |
+| Huéspedes      | PUT    | `/huespedes/{id}`     | Actualiza un huésped              | 200   |
+| Huéspedes      | DELETE | `/huespedes/{id}`     | Elimina un huésped                | 204   |
+| Reservas       | GET    | `/reservas`           | Lista todas las reservas          | 200   |
+| Reservas       | GET    | `/reservas/{id}`      | Obtiene una reserva por ID        | 200   |
+| Reservas       | POST   | `/reservas`           | Crea una reserva                  | 201   |
+| Reservas       | PUT    | `/reservas/{id}`      | Actualiza una reserva             | 200   |
+| Reservas       | DELETE | `/reservas/{id}`      | Elimina una reserva               | 204   |
+
+Códigos de error: `400` (JSON o ID inválido, o validación de negocio), `404` (recurso inexistente), `500` (error interno).
+
+### Ejemplo con curl
+
+Con la base levantada (`make db`) y la app corriendo (`make run`), por ejemplo:
+
+```bash
+# Crear un departamento
+curl -i -X POST http://localhost:8080/departamentos \
+  -H 'Content-Type: application/json' \
+  -d '{"nombre":"Departamento Centro","direccion":"Av. España 123","disponible":true,"limpio":true,"descripcion":"De dos ambientes"}'
+
+# Listar departamentos
+curl -i http://localhost:8080/departamentos
+```
+
+La prueba automatizada de **todos** los endpoints (caso feliz de cada uno) está en [`requests.hurl`](./requests.hurl), que es lo que corre `make test-api`.
+
 ## Decisiones que fuimos tomando
 
-- **Las herramientas de desarrollo no van en el Makefile ni en Docker**: sqlc, Atlas y Air solo se necesitan en la máquina del desarrollador, no para correr la app. Meterlas en el Makefile para instalarlas se podría hacer, pero se decantó por dejarlas como instalación manual única; y en Docker directamente no conviene, porque la imagen debería ser mínima (sqlc/atlas/air la agrandarían y contradicen el Dockerfile liviano de dos etapas).
+- **Arquitectura en capas con `dominio` como contrato**: los handlers no conocen la base, la lógica no conoce HTTP ni sqlc, y el repositorio es el único que habla con sqlc. Las capas se inyectan por constructor en `main.go`. El detalle está en `documentacion-estructura.md`.
+
+- **Error con código HTTP incorporado (`AppError`)**: cada capa crea el error donde sabe qué significa (`NotFoundError` → 404, `ValidationError` → 400) y el handler solo lee el `Status`. Cualquier otro error se responde como 500 sin filtrar detalles internos.
+
+- **HURL en vez de curl suelto para la prueba de endpoints**: un solo archivo (`requests.hurl`) declara cada request con su código esperado y asserts sobre el JSON. `hurl --test` lo ejecuta de corrido y devuelve un exit code, lo que hace la prueba repetible y apta para CI.
+
+- **`make test-api` como comando único**: junta tareas previas (sqlc, compilación, limpieza, levantar base y app), la prueba de endpoints y la limpieza posterior. Clonar, `git checkout tp3`, `make test-api`.
+
+- **La app corre local y la base en Docker para `test-api`**: el `test-api` levanta solo el servicio `database` de Compose (con `--wait` sobre el healthcheck) y ejecuta el binario local, para mantener el ciclo de prueba liviano.
+
+- **Las herramientas de desarrollo no van en el Makefile ni en Docker**: sqlc, Atlas y Air solo se necesitan en la máquina del desarrollador, no para correr la app. Meterlas en el Makefile para instalarlas se podría hacer, pero se decantó por dejarlas como instalación manual única; y en Docker directamente no conviene, porque la imagen debería ser mínima (sqlc/atlas/air la agrandarían y contradicen el Dockerfile liviano de dos etapas). HURL sí es necesario para `make test-api` y por eso se documenta su instalación.
 
 - **sqlc en vez de escribir SQL a mano o un ORM**: las queries se escriben en SQL y sqlc genera todo el código Go tipado (mapper). Nos da seguridad (tipo de compilación), evitamos errores de tipeo y no perdemos control sobre el SQL. Se alinea con lo que plantean las filminas como alternativa intermedia entre SQL a mano y un ORM completo.
 
@@ -112,7 +203,9 @@ make .env       # copia las credenciales genericas de la plantilla al .env local
 
 ## Pendientes
 
-- **Los tests corren contra la misma base de Docker**: alcanza con `make test` que levanta la DB y corre todo. Si algún día se quiere una base separada para tests, sería el paso a dar (ej. `mydb_test`).
+- **Los tests de datos corren contra la misma base de Docker**: alcanza con `make test` que levanta la DB y corre todo. Si algún día se quiere una base separada para tests, sería el paso a dar (ej. `mydb_test`).
+
+- **`make test-api` espera con un `sleep` fijo**: el target levanta la app y espera unos segundos antes de correr HURL. Si la máquina es lenta podría no alcanzar; la mejora natural es esperar activamente (polling) a que la app responda antes de probar.
 
 ## Problema solucionado
 
