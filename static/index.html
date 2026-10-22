@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Los 5 — Gestión de departamentos</title>
+
+  <!--
+    CSS provisional, incrustado para que la página se vea prolija desde el primer día.
+    Cuando se cree styles.css, este bloque se borra y se reemplaza por:
+      <link rel="stylesheet" href="styles.css">
+  -->
+  <style>
+    :root {
+      --fondo: #f4f6f8;
+      --panel: #ffffff;
+      --texto: #1f2933;
+      --texto-suave: #6b7280;
+      --borde: #d9dee5;
+      --primario: #2563eb;
+      --primario-oscuro: #1d4ed8;
+      --ok: #15803d;
+      --ok-fondo: #dcfce7;
+      --warn: #b45309;
+      --warn-fondo: #fef3c7;
+      --error: #b91c1c;
+      --error-fondo: #fee2e2;
+      --radio: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0 1.5rem 3rem;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--texto);
+      background: var(--fondo);
+    }
+
+    .cabecera {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 0 1.5rem;
+    }
+    .cabecera h1 { margin: 0; font-size: 1.75rem; letter-spacing: -0.02em; }
+    .cabecera .subtitulo { margin: 0.25rem 0 0; color: var(--texto-suave); }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio);
+      padding: 1.25rem;
+    }
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--borde);
+      padding-bottom: 0.6rem;
+    }
+    .seleccion { color: var(--primario); }
+
+    .formulario { display: grid; gap: 0.4rem; margin-bottom: 1rem; }
+    .formulario label { font-size: 0.8rem; color: var(--texto-suave); }
+    .formulario .checkboxes {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin: 0.4rem 0;
+    }
+    .formulario .checkboxes label {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+      color: var(--texto);
+      font-size: 0.9rem;
+    }
+
+    input[type="text"], input[type="email"], input[type="date"], input[type="number"] {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      font: inherit;
+      background: #fff;
+    }
+    input:focus-visible {
+      outline: 2px solid var(--primario);
+      outline-offset: 1px;
+    }
+    input[readonly] { background: #f1f3f5; color: var(--texto-suave); }
+
+    button {
+      padding: 0.5rem 0.9rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--primario);
+      color: #fff;
+    }
+    button:hover { background: var(--primario-oscuro); }
+    button.btn-secundario {
+      background: transparent;
+      color: var(--texto-suave);
+      border-color: var(--borde);
+    }
+    button.btn-secundario:hover { background: #f1f3f5; color: var(--texto); }
+    button.btn-icono {
+      padding: 0.1rem 0.45rem;
+      background: transparent;
+      color: var(--texto-suave);
+      border-color: var(--borde);
+      line-height: 1.4;
+    }
+    button.btn-icono:hover { background: var(--error-fondo); color: var(--error); }
+
+    .lista { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.5rem; }
+    .lista:empty::after {
+      content: "Sin elementos";
+      display: block;
+      padding: 0.75rem;
+      color: var(--texto-suave);
+      border: 1px dashed var(--borde);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .lista li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .lista li:hover { border-color: var(--primario); }
+    .lista li.activo { border-color: var(--primario); background: #eff6ff; }
+    .lista .titulo { font-weight: 600; }
+    .lista .detalle { display: block; font-size: 0.8rem; color: var(--texto-suave); }
+
+    .badges { display: flex; gap: 0.35rem; margin-top: 0.25rem; }
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background: #eceff3;
+      color: var(--texto-suave);
+    }
+    .badge.ok { background: var(--ok-fondo); color: var(--ok); }
+    .badge.warn { background: var(--warn-fondo); color: var(--warn); }
+
+    .mensaje {
+      max-width: 1200px;
+      margin: 1.25rem auto 0;
+      padding: 0.7rem 0.9rem;
+      border-radius: 6px;
+      background: var(--error-fondo);
+      color: var(--error);
+      border: 1px solid #fecaca;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="cabecera">
+    <h1>Los 5</h1>
+    <p class="subtitulo">Gestión de departamentos, reservas y huéspedes</p>
+  </header>
+
+  <main>
+
+    <!-- ================= DEPARTAMENTOS ================= -->
+    <section class="panel" id="panel-departamentos">
+      <h2>Departamentos</h2>
+
+      <form id="form-departamento" class="formulario">
+        <label for="nuevo-item-texto">Nombre</label>
+        <input type="text" id="nuevo-item-texto" placeholder="Ej: Departamento Centro" required>
+
+        <label for="nueva-direccion">Dirección</label>
+        <input type="text" id="nueva-direccion" placeholder="Ej: Av. España 123" required>
+
+        <label for="nueva-descripcion">Descripción</label>
+        <input type="text" id="nueva-descripcion" placeholder="Opcional">
+
+        <div class="checkboxes">
+          <label><input type="checkbox" id="nuevo-disponible" checked> Disponible</label>
+          <label><input type="checkbox" id="nuevo-limpio" checked> Limpio</label>
+        </div>
+
+        <button type="submit" id="agregar">Agregar departamento</button>
+      </form>
+
+      <ul id="lista-items" class="lista"></ul>
+
+      <button type="button" id="eliminar" class="btn-secundario">
+        Eliminar último departamento
+      </button>
+    </section>
+
+    <!-- ================= RESERVAS ================= -->
+    <section class="panel" id="panel-reservas">
+      <h2>Reservas de <span id="depto-seleccionado" class="seleccion">—</span></h2>
+
+      <form id="form-reserva" class="formulario">
+        <label for="nueva-fecha-inicio">Desde</label>
+        <input type="date" id="nueva-fecha-inicio" required>
+
+        <label for="nueva-fecha-fin">Hasta</label>
+        <input type="date" id="nueva-fecha-fin" required>
+
+        <label for="nuevo-precio">Precio base</label>
+        <input type="text" id="nuevo-precio" placeholder="15000.00" required>
+
+        <label for="nuevas-noches">Noches</label>
+        <input type="number" id="nuevas-noches" min="1" value="1" readonly>
+
+        <label for="nuevo-descuento">Descuento</label>
+        <input type="text" id="nuevo-descuento" placeholder="Opcional">
+
+        <button type="submit" id="agregar-reserva">Agregar reserva</button>
+      </form>
+
+      <ul id="lista-reservas" class="lista"></ul>
+
+      <button type="button" id="eliminar-reserva" class="btn-secundario">
+        Eliminar última reserva
+      </button>
+    </section>
+
+    <!-- ================= HUÉSPEDES ================= -->
+    <section class="panel" id="panel-huespedes">
+      <h2>Huéspedes de <span id="reserva-seleccionada" class="seleccion">—</span></h2>
+
+      <form id="form-huesped" class="formulario">
+        <label for="nuevo-nombre">Nombre</label>
+        <input type="text" id="nuevo-nombre" placeholder="Ej: María" required>
+
+        <label for="nuevo-apellido">Apellido</label>
+        <input type="text" id="nuevo-apellido" placeholder="Ej: González" required>
+
+        <label for="nuevo-telefono">Teléfono</label>
+        <input type="text" id="nuevo-telefono" placeholder="Opcional">
+
+        <label for="nuevo-email">Email</label>
+        <input type="email" id="nuevo-email" placeholder="Opcional">
+
+        <button type="submit" id="agregar-huesped">Agregar huésped</button>
+      </form>
+
+      <ul id="lista-huespedes" class="lista"></ul>
+
+      <button type="button" id="eliminar-huesped" class="btn-secundario">
+        Eliminar último huésped
+      </button>
+    </section>
+
+  </main>
+
+  <div id="mensaje" class="mensaje" role="status" aria-live="polite" hidden></div>
+
+  <!--
+    Lógica de la aplicación. Cuando se cree app.js, este tag queda como:
+      <script src="app.js" defer></script>
+  -->
+  <script src="app.js" defer></script>
+
+</body>
+</html>
