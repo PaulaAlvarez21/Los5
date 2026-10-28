@@ -34,23 +34,22 @@ func main() {
 
 	queries := sqlc.New(connection)
 
-	// 3. Crear los repositorios
-
-	deptosRepo := repo.NewDepartamentosRepository(queries)
-	reservasRepo := repo.NewReservasRepository(queries)
-	huespedesRepo := repo.NewHuespedRepository(queries)
+	// 3. Crear El repositorio común a todas las entidades y casos de uso
+	BDrepository := repo.NewBDRepository(queries)
 
 	// 4. Crear los servicios / lógica de negocio
 
-	deptosServ := logica.NewDepartamentoService(deptosRepo)
-	reservasServ := logica.NewReservaService(reservasRepo)
-	huespedesServ := logica.NewHuespedService(huespedesRepo)
+	deptosServ := logica.NewDepartamentoService(BDrepository)
+	reservasServ := logica.NewReservaService(BDrepository)
+	huespedesServ := logica.NewHuespedService(BDrepository)
+	CombinadoServ := logica.NewCombinadoService(BDrepository)
 
 	// 5. Crear los handlers
 
 	deptosHandler := handlers.NewDepartamentoHandler(deptosServ)
 	reservasHandler := handlers.NewReservaHandler(reservasServ)
 	huespedesHandler := handlers.NewHuespedHandler(huespedesServ)
+	combinadoHandler := handlers.NewCombinadoHandler(CombinadoServ)
 
 	// 6. Configurar las rutas
 
@@ -74,6 +73,8 @@ func main() {
 	http.HandleFunc("POST /reservas", reservasHandler.CrearReserva)
 	http.HandleFunc("PUT /reservas/{id}", reservasHandler.ActualizarReserva)
 	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReserva)
+
+	//Funcionalidades especificas (casos de uso)
 
 	// 7. Iniciar el servidor HTTP
 

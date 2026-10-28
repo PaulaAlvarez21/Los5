@@ -10,10 +10,10 @@ import (
 //se validan crear reserva y actualizar reserva, porque son los datos ingresados por usuario que pueden no respetar reglas de negocio.
 
 type ReservaService struct {
-	reservaRepository *repositorios.ReservasRepository
+	reservaRepository *repositorios.BDRepository
 }
 
-func NewReservaService(reservaRepository *repositorios.ReservasRepository) *ReservaService {
+func NewReservaService(reservaRepository *repositorios.BDRepository) *ReservaService {
 	return &ReservaService{reservaRepository: reservaRepository}
 }
 

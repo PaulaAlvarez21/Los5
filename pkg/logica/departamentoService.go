@@ -8,10 +8,10 @@ import (
 )
 
 type DepartamentoService struct {
-	departamentoRepository *repositorios.DepartamentosRepository
+	departamentoRepository *repositorios.BDRepository
 }
 
-func NewDepartamentoService(departamentoRepository *repositorios.DepartamentosRepository) *DepartamentoService {
+func NewDepartamentoService(departamentoRepository *repositorios.BDRepository) *DepartamentoService {
 	return &DepartamentoService{departamentoRepository: departamentoRepository}
 }
 

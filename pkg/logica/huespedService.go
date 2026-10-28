@@ -8,10 +8,10 @@ import (
 )
 
 type HuespedService struct {
-	huespedRepository *repositorios.HuespedRepository
+	huespedRepository *repositorios.BDRepository
 }
 
-func NewHuespedService(huespedRepository *repositorios.HuespedRepository) *HuespedService {
+func NewHuespedService(huespedRepository *repositorios.BDRepository) *HuespedService {
 	return &HuespedService{huespedRepository: huespedRepository}
 }
 
