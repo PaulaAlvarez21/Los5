@@ -1,3 +1,4 @@
 /db/sqlc/*.go
+/views/*_templ.go
 .env
 AGENTS.md 

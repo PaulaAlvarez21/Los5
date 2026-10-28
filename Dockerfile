@@ -13,6 +13,10 @@ RUN go mod download
 #copia nuestro proyecto dentro de docker
 COPY . .
 
+#genera el codigo Go de los .templ (el generado no se versiona, ver .gitignore)
+RUN go install github.com/a-h/templ/cmd/templ@v0.3.1100
+RUN /go/bin/templ generate
+
 #sqlc generate
 
 #lo compila y crea un ejecutable que llamaremos Los5

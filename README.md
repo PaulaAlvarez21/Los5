@@ -11,6 +11,7 @@ La arquitectura en capas está explicada en detalle en [`documentacion-estructur
 - **Go** (backend, `net/http` de la STL)
 - **PostgreSQL** (base de datos)
 - **sqlc** (genera el Go tipado a partir de las queries SQL)
+- **templ** (`a-h/templ`, genera el Go de las vistas HTML)
 - **Atlas** (migraciones de esquema)
 - **Air** (recompilación automática en desarrollo)
 - **Docker Compose** (levanta la base de datos)
@@ -46,6 +47,28 @@ La arquitectura en capas está explicada en detalle en [`documentacion-estructur
 
 > Casi todo está automatizado con **make**, así que con un par de comandos alcanza.
 
+### Probar el proyecto (un solo comando)
+
+Con las herramientas ya instaladas (ver "Primera vez" abajo), clonás y ejecutás:
+
+```bash
+git clone <URL-del-repo>
+cd Los5
+git checkout tp3
+make run-app
+```
+
+Después abrís <http://localhost:8080/web/departamentos> y cortás con `Ctrl+C`.
+
+`make run-app` hace todo el flujo:
+
+1. **`.env`** → si no existe, lo copia desde `.env.example`.
+2. **`build`** → ejecuta `sqlc generate` y `templ generate`, y compila `tmp/Los5`.
+3. **`db`** → `docker compose up -d --wait database` (levanta PostgreSQL y espera el healthcheck). En el primer arranque, Postgres aplica `db/schema/schema.sql` desde `/docker-entrypoint-initdb.d/`, así que no hace falta correr migraciones.
+4. **App** → carga las variables del `.env` y corre `./tmp/Los5` en primer plano.
+
+Al cortar con `Ctrl+C` la base queda levantada (con los datos que hayas cargado). Para volver la base a cero: `make reset` (borra el volumen y reaplica el schema). Para la prueba automática de todos los endpoints: `make test-api`.
+
 ### Primera vez
 
 Instalar las herramientas de desarrollo (solo una vez por máquina):
@@ -59,6 +82,9 @@ sudo apt install golang-go
 
 #instalacion de sqlc
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+#instalacion de templ (genera el Go de las vistas .templ)
+go install github.com/a-h/templ/cmd/templ@v0.3.1100
 
 #instalacion de la herramienta make
 sudo apt install make
@@ -91,7 +117,7 @@ make test-api
 
 1. **`.env`** → si no existe, copia `.env.example` (credenciales genéricas) a `.env`.
 2. **Tareas previas**
-   - `build` → ejecuta `sqlc generate` (regenera el código tipado) y compila el binario en `tmp/Los5`.
+   - `build` → ejecuta `sqlc generate` y `templ generate` (regeneran el código tipado y las vistas) y compila el binario en `tmp/Los5`.
    - `borrar` → `docker compose down -v` (borra contenedores **y volúmenes**, para arrancar de cero).
    - `db` → `docker compose up -d --wait database` (levanta la base y **espera** a que el healthcheck pase).
    - Levanta la aplicación (`./tmp/Los5`) con las variables del `.env`.
@@ -111,9 +137,13 @@ make test
 ### Otros comandos útiles
 
 ```bash
-make build      # genera código con sqlc y compila el binario
-make generate   # solo regenera el código sqlc
+make run-app    # arranca todo desde cero: .env + generate + build + DB + app
 make run        # ejecuta el servidor con Air (hot reload)
+make reset      # borra el volumen de la base y la recrea desde schema.sql
+make build      # genera código con sqlc y templ, y compila el binario
+make generate   # regenera todo el código generado (sqlc + templ)
+make sqlc       # solo regenera el código de db/sqlc
+make templ      # solo regenera el código de views/*_templ.go
 make db         # solo levanta la base de datos en Docker
 make migrate name=cambios    # genera una migración nueva con Atlas
 make apply      # aplica las migraciones a la base

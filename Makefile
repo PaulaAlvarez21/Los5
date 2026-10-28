@@ -1,15 +1,30 @@
 APP_NAME := Los5
 DB_URL := postgres://user:password@localhost:5432/mydb?sslmode=disable
 
-.PHONY: all run generate migrate apply status build test test-api clean db
+.PHONY: all run run-app reset generate sqlc templ migrate apply status build test test-api clean db borrar
 
 all: build
 
-run:
-	@air
+# levanta todo desde un clon: .env + codigo generado + binario + DB + app
+run-app: .env build db
+	@set -a; . ./.env; set +a; \
+	echo "App disponible en http://localhost:8080 (Ctrl+C para cortar)"; \
+	./tmp/$(APP_NAME)
 
-generate:
+# hot reload con Air (tambien funciona desde un clon)
+run: .env db
+	@set -a; . ./.env; set +a; air
+
+# vuelve la base a cero: borra el volumen y reaplica schema.sql
+reset: borrar db
+
+generate: sqlc templ
+
+sqlc:
 	@sqlc generate
+
+templ:
+	@templ generate
 
 migrate:
 	@test -n "$(name)" || (echo "Uso: make migrate name=nombre" && exit 1)
@@ -22,7 +37,7 @@ apply:
 status:
 	atlas migrate status --dir "file://db/migrations" --url "$(DB_URL)"
 
-db:
+db: .env
 	@docker compose up -d --wait database
 
 build: generate
