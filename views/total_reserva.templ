@@ -1,0 +1,48 @@
+package views
+
+import (
+	"fmt"
+	"Los5/pkg/dominio"
+)
+
+templ TotalReservaPage(total dominio.TotalReserva) {
+	@Layout("Total de Reserva", "reservas") {
+		<div style="background-color: var(--cream-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--cream-300); max-width: 40rem;">
+			<div style="margin-bottom: 1rem;">
+				<h2 style="font-size: 1.25rem; font-weight: 700;">Total de Reserva</h2>
+				<p style="font-size: 0.75rem; color: var(--slate-600);">Reserva #{ fmt.Sprint(total.Reserva.IDReserva) }</p>
+			</div>
+
+			<div class="table-container">
+				<table class="data-table">
+					<tbody>
+						<tr>
+							<th>Período</th>
+							<td>{ total.Reserva.FechaInicio.Format("2006-01-02") } &rarr; { total.Reserva.FechaFin.Format("2006-01-02") }</td>
+						</tr>
+						<tr>
+							<th>Noches</th>
+							<td>{ fmt.Sprint(total.Reserva.CantNoches) }</td>
+						</tr>
+						<tr>
+							<th>Subtotal</th>
+							<td>${ total.Subtotal }</td>
+						</tr>
+						<tr>
+							<th>Descuento</th>
+							<td>{ total.DescuentoPorcentaje }%</td>
+						</tr>
+						<tr>
+							<th>Total</th>
+							<td style="font-weight: 700; color: var(--success-text);">${ total.Total }</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+				<a href="/web/reservas" class="btn btn-secondary">Volver a Reservas</a>
+			</div>
+		</div>
+	}
+}

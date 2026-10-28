@@ -33,7 +33,7 @@ Content-Type: application/json
 {
   "nombre": "Departamento Centro Actualizado",
   "direccion": "Av. España 123",
-  "disponible": false,
+  "disponible": true,
   "limpio": true,
   "descripcion": "Departamento actualizado"
 }
@@ -89,7 +89,7 @@ Content-Type: application/json
   "fecha_fin": "2026-11-05T00:00:00Z",
   "precio_base": "18000.00",
   "cant_noches": 4,
-  "descuento": "100.00",
+  "descuento": "10.00",
   "observaciones": "reserva actualizada"
 }
 HTTP 200
@@ -146,6 +146,60 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.apellido" == "Gonzalez Actualizada"
+
+
+# ==========================================
+
+# CASOS DE USO COMBINADOS (HTML)
+
+# Reservas de un departamento
+GET http://localhost:8080/web/reservas?depto_id=1
+HTTP 200
+[Asserts]
+body contains "Departamento Centro Actualizado"
+body contains "18000.00"
+body contains "Gonzalez Actualizada"
+
+# Huéspedes de un departamento
+GET http://localhost:8080/web/departamentos/1/huespedes
+HTTP 200
+[Asserts]
+body contains "Gonzalez Actualizada"
+
+# Disponibilidad: rango sin reservas
+GET http://localhost:8080/web/departamentos/1/disponibilidad?desde=2026-12-01&hasta=2026-12-05
+HTTP 200
+[Asserts]
+body contains "Disponible"
+
+# Disponibilidad: rango que se solapa con la reserva existente
+GET http://localhost:8080/web/departamentos/1/disponibilidad?desde=2026-11-02&hasta=2026-11-04
+HTTP 200
+[Asserts]
+body contains "No disponible"
+
+# Total calculado de una reserva: 18000.00 * 4 noches - 10%
+GET http://localhost:8080/web/reservas/1/total
+HTTP 200
+[Asserts]
+body contains "64800.00"
+body contains "10.00%"
+
+# Errores de los casos de uso combinados
+GET http://localhost:8080/web/departamentos/abc/huespedes
+HTTP 400
+
+GET http://localhost:8080/web/departamentos/999/huespedes
+HTTP 404
+
+GET http://localhost:8080/web/reservas?depto_id=abc
+HTTP 400
+
+GET http://localhost:8080/web/departamentos/1/disponibilidad?desde=2026-11-05&hasta=2026-11-01
+HTTP 400
+
+GET http://localhost:8080/web/departamentos/1/disponibilidad?desde=fecha-invalida&hasta=2026-11-01
+HTTP 400
 
 
 # ==========================================

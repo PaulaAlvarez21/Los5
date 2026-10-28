@@ -1,5 +1,4 @@
-<!--*Estructura HTML base. Vincula la hoja de estilos estática /static/styles.css *mediante* <link rel="stylesheet" />
-package views-->
+package views
 
 templ Layout(title string, activeTab string) {
 	<!DOCTYPE html>
@@ -26,16 +25,16 @@ templ Layout(title string, activeTab string) {
 templ Header(activeTab string) {
 	<header class="header-bar">
 		<div class="header-container">
-			<a href="/departamentos" class="brand-logo">
+			<a href="/web/departamentos" class="brand-logo">
 				<div>
 					<h1 class="brand-title">Los 5 Alquileres</h1>
 				</div>
 			</a>
 			<div style="display: flex; gap: 0.75rem; align-items: center;">
 				<nav class="nav-pills">
-					<a href="/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
-					<a href="/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
-					<a href="/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
+					<a href="/web/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
+					<a href="/web/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
+					<a href="/web/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
 				</nav>
 				<button onclick="document.getElementById('modal-info').classList.remove('hidden')" class="btn btn-secondary" title="Información">i</button>
 			</div>

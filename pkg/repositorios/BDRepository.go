@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	sqlc "Los5/db/sqlc"
 	"Los5/pkg/dominio"
@@ -244,3 +245,38 @@ func fromNullString(ns sql.NullString) *string {
 }
 
 //REPOSITORY COMBINADO CASOS DE USO
+
+func (r *BDRepository) ListReservasByDepto(ctx context.Context, idDepto int32) ([]dominio.Reserva, error) {
+	reservasDB, err := r.query.ListReservasByDepto(ctx, idDepto)
+	if err != nil {
+		return nil, err
+	}
+	reservas := make([]dominio.Reserva, 0, len(reservasDB))
+	for _, reservaDB := range reservasDB {
+		reservas = append(reservas, toDominioReserva(reservaDB))
+	}
+	return reservas, nil
+}
+
+func (r *BDRepository) ListHuespedesByDepto(ctx context.Context, idDepto int32) ([]dominio.Huesped, error) {
+	huespedesDB, err := r.query.ListHuespedesByDepto(ctx, idDepto)
+	if err != nil {
+		return nil, err
+	}
+	huespedes := make([]dominio.Huesped, 0, len(huespedesDB))
+	for _, huespedDB := range huespedesDB {
+		huespedes = append(huespedes, toDominioHuesped(huespedDB))
+	}
+	return huespedes, nil
+}
+
+func (r *BDRepository) CountReservasSolapadas(ctx context.Context, idDepto int32, desde, hasta time.Time) (int64, error) {
+	arg := sqlc.CountReservasSolapadasParams{
+		IDDepto: idDepto,
+		Hasta:   hasta,
+		Desde:   desde,
+	}
+	return r.query.CountReservasSolapadas(ctx, arg)
+}
+
+//FALTA CORRER SQLC DE NUEVO CON NUEVAS QUERIES

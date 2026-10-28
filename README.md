@@ -145,7 +145,18 @@ El servidor escucha en `http://localhost:8080`. Todas las entidades exponen el m
 | Reservas       | PUT    | `/reservas/{id}`      | Actualiza una reserva             | 200   |
 | Reservas       | DELETE | `/reservas/{id}`      | Elimina una reserva               | 204   |
 
-Códigos de error: `400` (JSON o ID inválido, o validación de negocio), `404` (recurso inexistente), `500` (error interno).
+### Casos de uso combinados (HTML)
+
+Estos endpoints consultan más de una entidad y responden con HTML usando `a-h/templ`.
+
+| Caso de uso | Método | Ruta | Descripción | Éxito |
+|---|---|---|---|---|
+| Reservas por departamento | GET | `/web/reservas?depto_id={id}` | Lista las reservas de un departamento | 200 |
+| Huéspedes por departamento | GET | `/web/departamentos/{id}/huespedes` | Lista los huéspedes de las reservas de un departamento | 200 |
+| Disponibilidad | GET | `/web/departamentos/{id}/disponibilidad?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` | Indica si el departamento está disponible en el rango | 200 |
+| Total de reserva | GET | `/web/reservas/{id}/total` | Calcula subtotal, descuento y total de la reserva | 200 |
+
+Códigos de error: `400` (JSON, ID o fechas inválidas, o validación de negocio), `404` (recurso inexistente), `500` (error interno).
 
 ### Ejemplo con curl
 

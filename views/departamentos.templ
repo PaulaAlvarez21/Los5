@@ -39,13 +39,13 @@ templ DeptoCard(d dominio.Departamento) {
 				}
 			</div>
 			<p style="font-size: 0.75rem; color: var(--slate-600); margin-bottom: 0.5rem;">📍 { d.Direccion }</p>
-			<p style="font-size: 0.825rem; color: var(--slate-800);">{ d.Descripcion }</p>
+			<p style="font-size: 0.825rem; color: var(--slate-800);">{ valorTexto(d.Descripcion) }</p>
 		</div>
 		<div style="display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--cream-200);">
-			<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/limpieza", d.IDDepto)) } method="POST" style="flex: 1;">
+			<form action={ templ.URL(fmt.Sprintf("/web/departamentos/%d/limpieza", d.IDDepto)) } method="POST" style="flex: 1;">
 				<button type="submit" class="btn btn-secondary" style="width: 100%;">Cambiar Higiene</button>
 			</form>
-			<a href={ templ.URL(fmt.Sprintf("/reservas?depto_id=%d", d.IDDepto)) } class="btn btn-primary" style="flex: 1; text-align: center;">Ver Reservas</a>
+			<a href={ templ.URL(fmt.Sprintf("/web/reservas?depto_id=%d", d.IDDepto)) } class="btn btn-primary" style="flex: 1; text-align: center;">Ver Reservas</a>
 		</div>
 	</div>
 }
@@ -57,7 +57,7 @@ templ DeptoFormModal() {
 				<h3 style="font-weight: 700;">Nuevo Departamento</h3>
 				<button onclick="document.getElementById('modal-depto').classList.add('hidden')" style="background: none; border: none; cursor: pointer;">✕</button>
 			</div>
-			<form action="/departamentos" method="POST">
+			<form action="/web/departamentos" method="POST">
 				<div class="form-group">
 					<label>Nombre *</label>
 					<input type="text" name="nombre" required class="form-control"/>

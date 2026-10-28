@@ -19,7 +19,7 @@ templ ReservasPage(reservas []dominio.ReservaConDetalle, deptos []dominio.Depart
 			</div>
 
 			<!-- Filtros HTTP GET -->
-			<form action="/reservas" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background-color: var(--cream-100); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+			<form action="/web/reservas" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background-color: var(--cream-100); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
 				<div>
 					<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Departamento</label>
 					<select name="depto_id" class="form-control">
@@ -66,7 +66,7 @@ templ ReservasPage(reservas []dominio.ReservaConDetalle, deptos []dominio.Depart
 								<td style="font-family: monospace; font-weight: 700;">#{ fmt.Sprint(r.IDReserva) }</td>
 								<td style="font-weight: 600;">{ r.NombreDepto }</td>
 								<td>{ r.NombreHuesped } { r.ApellidoHuesped }</td>
-								<td>{ r.FechaInicio } &rarr; { r.FechaFin }</td>
+								<td>{ r.FechaInicio.Format("2006-01-02") } &rarr; { r.FechaFin.Format("2006-01-02") }</td>
 								<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
 								<td style="font-weight: 600; color: var(--success-text);">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
 							</tr>
@@ -94,7 +94,7 @@ templ ReservaFormModal(deptos []dominio.Departamento, huespedes []dominio.Huespe
 				</div>
 			}
 
-			<form action="/reservas" method="POST">
+			<form action="/web/reservas" method="POST">
 				<div class="form-group">
 					<label>Departamento *</label>
 					<select name="id_depto" required class="form-control">

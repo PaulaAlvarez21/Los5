@@ -229,3 +229,27 @@ Los endpoints se prueban con **HURL** desde el archivo `requests.hurl`, que decl
 3. **Posteriores**: matar la app y `docker compose down -v`.
 
 `hurl --test` devuelve un exit code distinto de 0 si algún assert falla, por lo que el comando es apto para CI. El detalle de uso está en el `README.md`.
+
+---
+
+## 7. Casos de uso combinados (HTML)
+
+Además del CRUD JSON por entidad, existen cuatro casos de uso que necesitan más de una entidad:
+
+- Reservas de un departamento.
+- Huéspedes de un departamento.
+- Disponibilidad de un departamento en un rango de fechas.
+- Total calculado de una reserva.
+
+Estos casos viven en `CombinadoService` y `CombinadoHandler`. El service valida las reglas de negocio y combina datos del repositorio; el handler no devuelve JSON, sino que renderiza HTML con `a-h/templ` bajo las rutas `/web/...`.
+
+Los DTOs de salida están en `pkg/dominio/combinadoStruct.go` (`ReservasPorDepartamento`, `HuespedesPorDepartamento`, `Disponibilidad`, `TotalReserva`) y también cruzan las capas como el resto de los structs de dominio.
+
+Las queries propias de estos casos están separadas en `db/queries/Combinado.sql` para no mezclarlas con los CRUD de cada entidad.
+
+Reglas principales:
+
+- Un ID inválido se responde como `400`.
+- Un departamento o reserva inexistente se responde como `404`.
+- La disponibilidad requiere `desde < hasta` y considera tanto el flag `disponible` del departamento como las reservas solapadas.
+- El total interpreta `descuento` como porcentaje entre `0` y `100`.

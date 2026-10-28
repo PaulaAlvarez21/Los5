@@ -42,14 +42,15 @@ func main() {
 	deptosServ := logica.NewDepartamentoService(BDrepository)
 	reservasServ := logica.NewReservaService(BDrepository)
 	huespedesServ := logica.NewHuespedService(BDrepository)
-	CombinadoServ := logica.NewCombinadoService(BDrepository)
+	combinadoServ := logica.NewCombinadoService(BDrepository)
 
 	// 5. Crear los handlers
 
 	deptosHandler := handlers.NewDepartamentoHandler(deptosServ)
 	reservasHandler := handlers.NewReservaHandler(reservasServ)
 	huespedesHandler := handlers.NewHuespedHandler(huespedesServ)
-	combinadoHandler := handlers.NewCombinadoHandler(CombinadoServ)
+	combinadoHandler := handlers.NewCombinadoHandler(combinadoServ)
+	webHandler := handlers.NewWebHandler(deptosServ, reservasServ, huespedesServ)
 
 	// 6. Configurar las rutas
 
@@ -74,7 +75,28 @@ func main() {
 	http.HandleFunc("PUT /reservas/{id}", reservasHandler.ActualizarReserva)
 	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReserva)
 
-	//Funcionalidades especificas (casos de uso)
+	// Interfaz web
+	http.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/web/departamentos", http.StatusSeeOther)
+	})
+	http.HandleFunc("GET /static/styles.css", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "views/styles.css")
+	})
+
+	http.HandleFunc("GET /web/departamentos", webHandler.DepartamentosWeb)
+	http.HandleFunc("POST /web/departamentos", webHandler.CrearDepartamentoWeb)
+	http.HandleFunc("POST /web/departamentos/{id}/limpieza", webHandler.CambiarHigieneWeb)
+
+	http.HandleFunc("GET /web/reservas", combinadoHandler.ReservasWeb)
+	http.HandleFunc("POST /web/reservas", webHandler.CrearReservaWeb)
+
+	http.HandleFunc("GET /web/huespedes", webHandler.HuespedesWeb)
+	http.HandleFunc("POST /web/huespedes", webHandler.CrearHuespedWeb)
+
+	// Funcionalidades específicas combinadas
+	http.HandleFunc("GET /web/departamentos/{id}/huespedes", combinadoHandler.HuespedesPorDepartamentoWeb)
+	http.HandleFunc("GET /web/departamentos/{id}/disponibilidad", combinadoHandler.DisponibilidadWeb)
+	http.HandleFunc("GET /web/reservas/{id}/total", combinadoHandler.TotalReservaWeb)
 
 	// 7. Iniciar el servidor HTTP
 

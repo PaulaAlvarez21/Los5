@@ -1,0 +1,45 @@
+package views
+
+import (
+	"fmt"
+	"Los5/pkg/dominio"
+)
+
+templ DisponibilidadPage(d dominio.Disponibilidad) {
+	@Layout("Disponibilidad", "departamentos") {
+		<div style="background-color: var(--cream-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--cream-300);">
+			<div style="margin-bottom: 1rem;">
+				<h2 style="font-size: 1.25rem; font-weight: 700;">Disponibilidad</h2>
+				<p style="font-size: 0.75rem; color: var(--slate-600);">{ d.Departamento.Nombre } - { d.Departamento.Direccion }</p>
+			</div>
+
+			if d.Desde.IsZero() {
+				<form action={ templ.URL(fmt.Sprintf("/web/departamentos/%d/disponibilidad", d.Departamento.IDDepto)) } method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background-color: var(--cream-100); padding: 1rem; border-radius: 0.75rem;">
+					<div>
+						<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Desde</label>
+						<input type="date" name="desde" required class="form-control"/>
+					</div>
+					<div>
+						<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Hasta</label>
+						<input type="date" name="hasta" required class="form-control"/>
+					</div>
+					<div style="display: flex; align-self: flex-end;">
+						<button type="submit" class="btn btn-primary" style="width: 100%;">Consultar</button>
+					</div>
+				</form>
+			} else {
+				<div style="display: grid; gap: 0.5rem; margin-bottom: 1rem;">
+					<p style="font-size: 0.875rem;"><strong>Desde:</strong> { d.Desde.Format("2006-01-02") }</p>
+					<p style="font-size: 0.875rem;"><strong>Hasta:</strong> { d.Hasta.Format("2006-01-02") }</p>
+					<p style="font-size: 0.875rem;"><strong>Reservas solapadas:</strong> { fmt.Sprint(d.CantReservasSolapadas) }</p>
+					if d.Disponible {
+						<span class="badge badge-clean">Disponible</span>
+					} else {
+						<span class="badge badge-dirty">No disponible</span>
+					}
+				</div>
+				<a href={ templ.URL(fmt.Sprintf("/web/departamentos/%d/disponibilidad", d.Departamento.IDDepto)) } class="btn btn-secondary">Consultar otro rango</a>
+			}
+		</div>
+	}
+}

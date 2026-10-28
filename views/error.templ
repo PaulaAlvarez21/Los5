@@ -1,0 +1,15 @@
+package views
+
+import (
+	"fmt"
+)
+
+templ ErrorPage(status int, mensaje string) {
+	@Layout("Error", "") {
+		<div style="background-color: var(--cream-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--cream-300); max-width: 40rem;">
+			<h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Error { fmt.Sprint(status) }</h2>
+			<p style="font-size: 0.875rem; color: var(--slate-800); margin-bottom: 1rem;">{ mensaje }</p>
+			<a href="/web/departamentos" class="btn btn-primary">Volver a Departamentos</a>
+		</div>
+	}
+}
