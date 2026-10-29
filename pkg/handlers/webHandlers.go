@@ -28,6 +28,10 @@ func NewWebHandler(
 	}
 }
 
+func (h *WebHandler) InicioWeb(w http.ResponseWriter, r *http.Request) {
+	renderHTML(w, r, http.StatusOK, views.InicioPage())
+}
+
 func (h *WebHandler) DepartamentosWeb(w http.ResponseWriter, r *http.Request) {
 	departamentos, err := h.departamentoService.ObtenerDepartamentos(r.Context())
 	if err != nil {
@@ -46,6 +50,36 @@ func (h *WebHandler) HuespedesWeb(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderHTML(w, r, http.StatusOK, views.HuespedesPage(huespedes))
+}
+
+func (h *WebHandler) NuevoDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
+	renderHTML(w, r, http.StatusOK, views.DepartamentoFormPage())
+}
+
+func (h *WebHandler) NuevaReservaWeb(w http.ResponseWriter, r *http.Request) {
+	departamentos, err := h.departamentoService.ObtenerDepartamentos(r.Context())
+	if err != nil {
+		responderErrorWeb(w, r, err)
+		return
+	}
+
+	huespedes, err := h.huespedService.ObtenerHuespedes(r.Context())
+	if err != nil {
+		responderErrorWeb(w, r, err)
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.ReservaFormPage(departamentos, huespedes))
+}
+
+func (h *WebHandler) NuevoHuespedWeb(w http.ResponseWriter, r *http.Request) {
+	reservas, err := h.reservaService.ObtenerReservas(r.Context())
+	if err != nil {
+		responderErrorWeb(w, r, err)
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.HuespedFormPage(reservas))
 }
 
 func (h *WebHandler) CrearDepartamentoWeb(w http.ResponseWriter, r *http.Request) {

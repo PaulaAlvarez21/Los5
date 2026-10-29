@@ -76,21 +76,22 @@ func main() {
 	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReserva)
 
 	// Interfaz web
-	http.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/web/departamentos", http.StatusSeeOther)
-	})
+	http.HandleFunc("GET /{$}", webHandler.InicioWeb)
 	http.HandleFunc("GET /static/styles.css", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "views/styles.css")
 	})
 
 	http.HandleFunc("GET /web/departamentos", webHandler.DepartamentosWeb)
+	http.HandleFunc("GET /web/departamentos/nuevo", webHandler.NuevoDepartamentoWeb)
 	http.HandleFunc("POST /web/departamentos", webHandler.CrearDepartamentoWeb)
 	http.HandleFunc("POST /web/departamentos/{id}/limpieza", webHandler.CambiarHigieneWeb)
 
 	http.HandleFunc("GET /web/reservas", combinadoHandler.ReservasWeb)
+	http.HandleFunc("GET /web/reservas/nuevo", webHandler.NuevaReservaWeb)
 	http.HandleFunc("POST /web/reservas", webHandler.CrearReservaWeb)
 
 	http.HandleFunc("GET /web/huespedes", webHandler.HuespedesWeb)
+	http.HandleFunc("GET /web/huespedes/nuevo", webHandler.NuevoHuespedWeb)
 	http.HandleFunc("POST /web/huespedes", webHandler.CrearHuespedWeb)
 
 	// Funcionalidades específicas combinadas

@@ -17,7 +17,6 @@ templ Layout(title string, activeTab string) {
 			<main class="main-content">
 				{ children... }
 			</main>
-			@InfoModal()
 		</body>
 	</html>
 }
@@ -25,36 +24,16 @@ templ Layout(title string, activeTab string) {
 templ Header(activeTab string) {
 	<header class="header-bar">
 		<div class="header-container">
-			<a href="/web/departamentos" class="brand-logo">
+			<a href="/" class="brand-logo">
 				<div>
 					<h1 class="brand-title">Los 5 Alquileres</h1>
 				</div>
 			</a>
-			<div style="display: flex; gap: 0.75rem; align-items: center;">
-				<nav class="nav-pills">
-					<a href="/web/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
-					<a href="/web/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
-					<a href="/web/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
-				</nav>
-				<button onclick="document.getElementById('modal-info').classList.remove('hidden')" class="btn btn-secondary" title="Información">i</button>
-			</div>
+			<nav class="nav-pills">
+				<a href="/web/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
+				<a href="/web/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
+				<a href="/web/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
+			</nav>
 		</div>
 	</header>
-}
-
-templ InfoModal() {
-	<div id="modal-info" class="modal-backdrop hidden">
-		<div class="modal-box">
-			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-				<h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700;">Los 5 Alquileres</h3>
-				<button onclick="document.getElementById('modal-info').classList.add('hidden')" style="background: none; border: none; cursor: pointer; font-size: 1.25rem;">✕</button>
-			</div>
-			<p style="font-size: 0.875rem; color: var(--slate-600); margin-bottom: 1rem;">
-				Gestión integral de alojamientos temporarios. Administración de inmuebles, estado de higiene y control de reservas.
-			</p>
-			<div style="text-align: right;">
-				<button onclick="document.getElementById('modal-info').classList.add('hidden')" class="btn btn-primary">Cerrar</button>
-			</div>
-		</div>
-	</div>
 }
