@@ -5,9 +5,17 @@ DB_URL := postgres://user:password@localhost:5432/mydb?sslmode=disable
 
 all: build
 
-# levanta todo desde un clon: .env + codigo generado + binario + DB + app
-run-app: .env build db
+# ciclo completo de entrega: limpia, genera, compila, levanta la base, ejecuta
+# la app y al salir vuelve a limpiar (contenedores, volumenes y tmp/)
+run-app: .env build borrar db
 	@set -a; . ./.env; set +a; \
+	limpiar() { \
+		echo "-> Bajando contenedores y borrando volumenes"; \
+		docker compose down -v; \
+		rm -rf ./tmp; \
+	}; \
+	trap limpiar EXIT; \
+	trap 'exit 130' INT TERM; \
 	echo "App disponible en http://localhost:8080 (Ctrl+C para cortar)"; \
 	./tmp/$(APP_NAME)
 

@@ -52,22 +52,44 @@ La arquitectura en capas está explicada en detalle en [`documentacion-estructur
 Con las herramientas ya instaladas (ver "Primera vez" abajo), clonás y ejecutás:
 
 ```bash
-git clone <URL-del-repo>
+git clone -b tp5 <URL-del-repo>
 cd Los5
-git checkout tp3
 make run-app
 ```
 
+> La entrega vive en la branch **`tp5`** (un clon normal aterriza en `tp1`).
+
 Después abrís <http://localhost:8080/web/departamentos> y cortás con `Ctrl+C`.
 
-`make run-app` hace todo el flujo:
+`make run-app` hace todo el ciclo de la entrega:
+
+**Tareas previas**
 
 1. **`.env`** → si no existe, lo copia desde `.env.example`.
 2. **`build`** → ejecuta `sqlc generate` y `templ generate`, y compila `tmp/Los5`.
-3. **`db`** → `docker compose up -d --wait database` (levanta PostgreSQL y espera el healthcheck). En el primer arranque, Postgres aplica `db/schema/schema.sql` desde `/docker-entrypoint-initdb.d/`, así que no hace falta correr migraciones.
-4. **App** → carga las variables del `.env` y corre `./tmp/Los5` en primer plano.
+3. **`borrar`** → `docker compose down -v`: elimina contenedores y volúmenes (arranca de cero).
+4. **`db`** → `docker compose up -d --wait database`: levanta PostgreSQL y **espera** a que el healthcheck pase. Como el volumen quedó vacío, Postgres aplica `db/schema/schema.sql` desde `/docker-entrypoint-initdb.d/`, así que no hace falta correr migraciones.
 
-Al cortar con `Ctrl+C` la base queda levantada (con los datos que hayas cargado). Para volver la base a cero: `make reset` (borra el volumen y reaplica el schema). Para la prueba automática de todos los endpoints: `make test-api`.
+**Ejecución**
+
+5. Carga las variables del `.env` y corre `./tmp/Los5` en primer plano (la terminal queda ocupada por la app hasta que la cortes).
+
+**Tareas posteriores**
+
+6. Al salir con `Ctrl+C`, corre `docker compose down -v` y `rm -rf ./tmp`: no quedan contenedores, ni volúmenes, ni binario.
+
+**El `Ctrl+C` y los `trap`** — la receta registra dos traps:
+
+```sh
+trap limpiar EXIT          # al salir, siempre: down -v + rm -rf ./tmp
+trap 'exit 130' INT TERM   # Ctrl+C → salida ordenada (130 = 128 + SIGINT)
+```
+
+El segundo convierte la señal en una salida normal, porque un shell que muere por señal **no** ejecuta el `trap EXIT`. Así el `docker compose down -v` corre una sola vez, en cualquier salida.
+
+> Es normal ver `make: *** [...] Interrupt` al cortar: la limpieza ya se ejecutó. `kill -9` no se puede atrapar; en ese caso, `make borrar`.
+
+La prueba automática de todos los endpoints es `make test-api`, que sigue el mismo esquema (preparar → probar → limpiar). Para desarrollo con hot reload y datos persistentes entre corridas está `make run`.
 
 ### Primera vez
 
@@ -137,7 +159,7 @@ make test
 ### Otros comandos útiles
 
 ```bash
-make run-app    # arranca todo desde cero: .env + generate + build + DB + app
+make run-app    # ciclo de entrega: limpia, genera, compila, levanta la DB, ejecuta la app y limpia al salir
 make run        # ejecuta el servidor con Air (hot reload)
 make reset      # borra el volumen de la base y la recrea desde schema.sql
 make build      # genera código con sqlc y templ, y compila el binario
@@ -246,7 +268,6 @@ La prueba automatizada de **todos** los endpoints (caso feliz de cada uno) está
 
 - **Los tests de datos corren contra la misma base de Docker**: alcanza con `make test` que levanta la DB y corre todo. Si algún día se quiere una base separada para tests, sería el paso a dar (ej. `mydb_test`).
 
-- **`make test-api` espera con un `sleep` fijo**: el target levanta la app y espera unos segundos antes de correr HURL. Si la máquina es lenta podría no alcanzar; la mejora natural es esperar activamente (polling) a que la app responda antes de probar.
 
 ## Problema solucionado
 
