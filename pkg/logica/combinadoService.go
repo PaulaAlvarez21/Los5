@@ -86,8 +86,11 @@ func (s *CombinadoService) ObtenerPaginaReservas(ctx context.Context, filtro Fil
 
 	nombresHuespedes := make(map[int32][]string)
 	for _, huesped := range huespedes {
+		if huesped.IDReserva == nil {
+			continue
+		}
 		nombreCompleto := strings.TrimSpace(huesped.Nombre + " " + huesped.Apellido)
-		nombresHuespedes[huesped.IDReserva] = append(nombresHuespedes[huesped.IDReserva], nombreCompleto)
+		nombresHuespedes[*huesped.IDReserva] = append(nombresHuespedes[*huesped.IDReserva], nombreCompleto)
 	}
 
 	reservasConDetalle := make([]dominio.ReservaConDetalle, 0, len(reservas))

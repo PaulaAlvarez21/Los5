@@ -49,7 +49,7 @@ func crearHuespedCombinado(t *testing.T, idReserva int32, nombre, apellido strin
 	t.Helper()
 
 	huesped, err := testQueries.CreateHuesped(context.Background(), sqlc.CreateHuespedParams{
-		IDReserva:     idReserva,
+		IDReserva:     sql.NullInt32{Int32: idReserva, Valid: true},
 		Nombre:        nombre,
 		Apellido:      apellido,
 		Telefono:      sql.NullString{String: "123456789", Valid: true},

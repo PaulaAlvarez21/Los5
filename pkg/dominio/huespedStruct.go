@@ -2,7 +2,7 @@ package dominio
 
 type Huesped struct {
 	IDHuesped     int32   `json:"id_huesped"`
-	IDReserva     int32   `json:"id_reserva"`
+	IDReserva     *int32  `json:"id_reserva"`
 	Nombre        string  `json:"nombre"`
 	Apellido      string  `json:"apellido"`
 	Telefono      *string `json:"telefono"`

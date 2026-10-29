@@ -135,7 +135,7 @@ func (h *WebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		huesped.IDReserva = reservaCreada.IDReserva
+		huesped.IDReserva = &reservaCreada.IDReserva
 		if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
 			responderErrorWeb(w, r, err)
 			return
@@ -151,14 +151,19 @@ func (h *WebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idReserva, err := strconv.Atoi(r.FormValue("id_reserva"))
-	if err != nil || idReserva <= 0 {
-		responderErrorWeb(w, r, dominio.ValidationError("la reserva es obligatoria"))
-		return
+	var idReserva *int32
+	if rawIDReserva := strings.TrimSpace(r.FormValue("id_reserva")); rawIDReserva != "" {
+		parsed, err := strconv.Atoi(rawIDReserva)
+		if err != nil || parsed <= 0 {
+			responderErrorWeb(w, r, dominio.ValidationError("la reserva es inválida"))
+			return
+		}
+		valor := int32(parsed)
+		idReserva = &valor
 	}
 
 	huesped := dominio.Huesped{
-		IDReserva:     int32(idReserva),
+		IDReserva:     idReserva,
 		Nombre:        r.FormValue("nombre"),
 		Apellido:      r.FormValue("apellido"),
 		Telefono:      stringOpcional(r.FormValue("telefono")),

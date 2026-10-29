@@ -118,6 +118,18 @@ HTTP 201
 jsonpath "$.id_huesped" isInteger
 jsonpath "$.nombre" == "Maria"
 
+# Crear huésped sin reserva (POST)
+POST http://localhost:8080/huespedes
+Content-Type: application/json
+{
+  "nombre": "Pedro",
+  "apellido": "Zarate"
+}
+HTTP 201
+[Asserts]
+jsonpath "$.id_huesped" isInteger
+jsonpath "$.id_reserva" == null
+
 # Listar huéspedes (GET)
 GET http://localhost:8080/huespedes
 HTTP 200

@@ -169,7 +169,7 @@ go build ./...
 
 ## Limitaciones conocidas
 
-- El formulario de alta de huésped existente no incluye `id_reserva`; el handler devuelve `400` si falta. No se agregó el campo para no modificar el template.
+- El formulario de alta de huésped no incluye `id_reserva`; el handler lo acepta vacío y crea el huésped sin reserva (`NULL`).
 - El formulario de alta de reserva selecciona un huésped existente y luego lo reasigna. Si la reasignación falla, la reserva ya quedó creada.
 - Los nombres de varios huéspedes se concatenan en `NombreHuesped` y `ApellidoHuesped` queda vacío, para no cambiar la tabla de reservas.
 - La pantalla de disponibilidad y la de total no tienen links desde las páginas existentes; se accede por URL directa.

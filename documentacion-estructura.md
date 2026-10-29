@@ -69,6 +69,7 @@ El repositorio es el encargado de traducir entre el dominio y lo que espera sqlc
 | Campo nullable en dominio | sqlc |
 |---|---|
 | `*string` (`nil` = ausencia de valor) | `sql.NullString` (`Valid=false` = NULL) |
+| `*int32` (`nil` = ausencia de valor) | `sql.NullInt32` (`Valid=false` = NULL) |
 
 - Al **escribir**: `toNullString(*string) sql.NullString` convierte `nil → NullString{}` y `&s → {String: s, Valid: true}`.
 - Al **leer**: `fromNullString(sql.NullString) *string` convierte `Valid=false → nil`.
@@ -152,9 +153,9 @@ reserva.IDDepto > 0             // la reserva debe referenciar un departamento e
 
 ```go
 // Crear
-huesped.IDReserva > 0          // un huésped no puede existir sin una reserva (FK)
-&& huesped.Nombre != ""        // campo obligatorio (NOT NULL)
+huesped.Nombre != ""           // campo obligatorio (NOT NULL)
 && huesped.Apellido != ""      // campo obligatorio (NOT NULL)
+// huesped.IDReserva puede ser nil: el huésped puede existir sin reserva asociada
 
 // Actualizar: las mismas + huesped.IDHuesped > 0
 ```
@@ -170,7 +171,7 @@ departamento.Nombre != ""      // campo obligatorio (NOT NULL)
 ```
 
 Notas:
-- Campos opcionales (`*string` en dominio, NULL en la DB): `Descripcion`, `Telefono`, `Email`, `Observaciones`, `Descuento` no se validan porque la ausencia de valor es válida.
+- Campos opcionales (`*string`/`*int32` en dominio, NULL en la DB): `Descripcion`, `Telefono`, `Email`, `Observaciones`, `Descuento`, `IDReserva` no se validan porque la ausencia de valor es válida.
 - No se valida estado de `bool` (`Disponible`/`Limpio`) porque siempre tienen un valor.
 - Las validaciones deben replicarse en crear y actualizar, porque una actualización también puede traer datos inválidos.
 

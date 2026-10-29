@@ -89,7 +89,7 @@ func toDominioDepartamento(departamentoDB sqlc.Departamento) dominio.Departament
 // Huesped funciones Repository
 func (r *BDRepository) CreateHuesped(ctx context.Context, huesped dominio.Huesped) (dominio.Huesped, error) {
 	arg := sqlc.CreateHuespedParams{
-		IDReserva:     huesped.IDReserva,
+		IDReserva:     toNullInt32(huesped.IDReserva),
 		Nombre:        huesped.Nombre,
 		Apellido:      huesped.Apellido,
 		Telefono:      toNullString(huesped.Telefono),
@@ -129,7 +129,7 @@ func (r *BDRepository) ListHuespedes(ctx context.Context) ([]dominio.Huesped, er
 func (r *BDRepository) UpdateHuesped(ctx context.Context, huesped dominio.Huesped) error {
 	arg := sqlc.UpdateHuespedParams{
 		IDHuesped:     huesped.IDHuesped,
-		IDReserva:     huesped.IDReserva,
+		IDReserva:     toNullInt32(huesped.IDReserva),
 		Nombre:        huesped.Nombre,
 		Apellido:      huesped.Apellido,
 		Telefono:      toNullString(huesped.Telefono),
@@ -147,7 +147,7 @@ func (r *BDRepository) DeleteHuesped(ctx context.Context, id int32) error {
 func toDominioHuesped(huespedDB sqlc.Huesped) dominio.Huesped {
 	return dominio.Huesped{
 		IDHuesped:     huespedDB.IDHuesped,
-		IDReserva:     huespedDB.IDReserva,
+		IDReserva:     fromNullInt32(huespedDB.IDReserva),
 		Nombre:        huespedDB.Nombre,
 		Apellido:      huespedDB.Apellido,
 		Telefono:      fromNullString(huespedDB.Telefono),
@@ -242,6 +242,20 @@ func fromNullString(ns sql.NullString) *string {
 		return nil
 	}
 	return &ns.String
+}
+
+func toNullInt32(n *int32) sql.NullInt32 {
+	if n == nil {
+		return sql.NullInt32{}
+	}
+	return sql.NullInt32{Int32: *n, Valid: true}
+}
+
+func fromNullInt32(n sql.NullInt32) *int32 {
+	if !n.Valid {
+		return nil
+	}
+	return &n.Int32
 }
 
 //REPOSITORY COMBINADO CASOS DE USO

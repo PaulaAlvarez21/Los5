@@ -46,7 +46,7 @@ func datosTestHuesped(t *testing.T) sqlc.Huesped {
 	t.Cleanup(func() { testQueries.DeleteReserva(context.Background(), reserva.IDReserva) })
 
 	huesped, err := testQueries.CreateHuesped(context.Background(), sqlc.CreateHuespedParams{
-		IDReserva:     reserva.IDReserva,
+		IDReserva:     sql.NullInt32{Int32: reserva.IDReserva, Valid: true},
 		Nombre:        "Juan",
 		Apellido:      "Perez",
 		Telefono:      sql.NullString{String: "123456789", Valid: true},
@@ -74,6 +74,33 @@ func TestCreateHuesped(t *testing.T) {
 	}
 	if huesped.Email.String != "juan@test.com" {
 		t.Errorf("email incorrecto, esperado 'juan@test.com', got '%s'", huesped.Email.String)
+	}
+}
+
+func TestCreateHuespedSinReserva(t *testing.T) {
+	huesped, err := testQueries.CreateHuesped(context.Background(), sqlc.CreateHuespedParams{
+		IDReserva:     sql.NullInt32{},
+		Nombre:        "Sin",
+		Apellido:      "Reserva",
+		Telefono:      sql.NullString{},
+		Email:         sql.NullString{},
+		Observaciones: sql.NullString{},
+	})
+	if err != nil {
+		t.Fatalf("no se pudo crear huesped sin reserva: %v", err)
+	}
+	t.Cleanup(func() { testQueries.DeleteHuesped(context.Background(), huesped.IDHuesped) })
+
+	if huesped.IDReserva.Valid {
+		t.Errorf("id_reserva deberia ser NULL, got %d", huesped.IDReserva.Int32)
+	}
+
+	got, err := testQueries.GetHuesped(context.Background(), huesped.IDHuesped)
+	if err != nil {
+		t.Fatalf("no se pudo obtener huesped sin reserva: %v", err)
+	}
+	if got.IDReserva.Valid {
+		t.Errorf("id_reserva deberia seguir siendo NULL, got %d", got.IDReserva.Int32)
 	}
 }
 

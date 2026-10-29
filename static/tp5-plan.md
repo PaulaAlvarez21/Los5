@@ -27,3 +27,8 @@ decisiones:
 nos quedaron la API con los endpoint crud (solamente) en los handlers por entidad
 y los casos de uso tienen solo handlers para web (cambia el formato de entrada y salida cómo se comunica con el cliente (depende de lo que recibe o dá el cliente))
 
+				header 
+					{{render .BtnReservas}}
+					{{render .BtnDeptos}}
+				header
+				{{render .Formulario}}

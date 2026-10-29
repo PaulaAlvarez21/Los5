@@ -33,7 +33,7 @@ CREATE TABLE reserva (
 -- Table: huesped
 CREATE TABLE huesped (
     id_huesped serial  PRIMARY KEY,
-    id_reserva int  NOT NULL,
+    id_reserva int  NULL,
     nombre varchar(50)  NOT NULL,
     apellido varchar(50)  NOT NULL,
     telefono varchar(50)  NULL,
