@@ -29,7 +29,7 @@ func NewWebHandler(
 }
 
 func (h *WebHandler) InicioWeb(w http.ResponseWriter, r *http.Request) {
-	renderHTML(w, r, http.StatusOK, views.InicioPage())
+	renderHTML(w, r, http.StatusOK, views.Layout("LOS 5 ALQUILERES", ""))
 }
 
 func (h *WebHandler) DepartamentosWeb(w http.ResponseWriter, r *http.Request) {
