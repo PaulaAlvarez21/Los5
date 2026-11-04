@@ -1,0 +1,160 @@
+package views
+
+import (
+	"fmt"
+
+	"Los5/pkg/dominio"
+)
+
+templ DepartamentoList(deptos []dominio.Departamento) {
+	<div class="table-container">
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Departamento</th>
+					<th>Dirección</th>
+					<th>Descripción</th>
+					<th>Estado</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(deptos) == 0 {
+					<tr>
+						<td colspan="5" class="empty-cell">No hay departamentos registrados.</td>
+					</tr>
+				}
+				for _, d := range deptos {
+					<tr>
+						<td class="strong">{ d.Nombre }</td>
+						<td>{ d.Direccion }</td>
+						<td>{ valorTexto(d.Descripcion) }</td>
+						<td>
+							if d.Limpio {
+								<span class="badge badge-clean">Limpio</span>
+							} else {
+								<span class="badge badge-dirty">Mantenimiento</span>
+							}
+						</td>
+						<td>
+							<div class="row-actions">
+								<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/limpieza", d.IDDepto)) } method="post">
+									<button type="submit" class="btn btn-secondary">Cambiar higiene</button>
+								</form>
+								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/reservas", d.IDDepto)) } class="btn btn-secondary">Reservas</a>
+								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/huespedes", d.IDDepto)) } class="btn btn-secondary">Huéspedes</a>
+								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/disponibilidad", d.IDDepto)) } class="btn btn-secondary">Disponibilidad</a>
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ ReservaList(reservas []dominio.ReservaConDetalle) {
+	<div class="table-container">
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Departamento</th>
+					<th>Huésped</th>
+					<th>Período</th>
+					<th>Noches</th>
+					<th>Precio base</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(reservas) == 0 {
+					<tr>
+						<td colspan="7" class="empty-cell">No hay reservas registradas.</td>
+					</tr>
+				}
+				for _, r := range reservas {
+					<tr>
+						<td class="mono strong">#{ fmt.Sprint(r.IDReserva) }</td>
+						<td class="strong">{ r.NombreDepto }</td>
+						<td>{ r.NombreHuesped }</td>
+						<td>{ r.FechaInicio.Format("2006-01-02") } → { r.FechaFin.Format("2006-01-02") }</td>
+						<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
+						<td class="strong success-text">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
+						<td>
+							<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ HuespedList(huespedes []dominio.Huesped) {
+	<div class="table-container">
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>Nombre y apellido</th>
+					<th>Teléfono</th>
+					<th>Email</th>
+					<th>Observaciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(huespedes) == 0 {
+					<tr>
+						<td colspan="4" class="empty-cell">No hay huéspedes registrados.</td>
+					</tr>
+				}
+				for _, h := range huespedes {
+					<tr>
+						<td class="strong">{ h.Nombre } { h.Apellido }</td>
+						<td>{ valorTexto(h.Telefono) }</td>
+						<td>{ valorTexto(h.Email) }</td>
+						<td class="muted">{ valorTexto(h.Observaciones) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ ReservaSimpleList(reservas []dominio.Reserva) {
+	<div class="table-container">
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Período</th>
+					<th>Noches</th>
+					<th>Precio base</th>
+					<th>Descuento</th>
+					<th>Observaciones</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(reservas) == 0 {
+					<tr>
+						<td colspan="7" class="empty-cell">Este departamento no tiene reservas registradas.</td>
+					</tr>
+				}
+				for _, r := range reservas {
+					<tr>
+						<td class="mono strong">#{ fmt.Sprint(r.IDReserva) }</td>
+						<td>{ r.FechaInicio.Format("2006-01-02") } → { r.FechaFin.Format("2006-01-02") }</td>
+						<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
+						<td class="strong success-text">${ r.PrecioBase }</td>
+						<td>{ valorTexto(r.Descuento) }%</td>
+						<td class="muted">{ valorTexto(r.Observaciones) }</td>
+						<td>
+							<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

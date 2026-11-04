@@ -10,12 +10,12 @@ import (
 	"Los5/pkg/logica"
 )
 
-type ReservaHandler struct {
+type ReservaAPIHandler struct {
 	reservaService *logica.ReservaService
 }
 
-func NewReservaHandler(reservaService *logica.ReservaService) *ReservaHandler {
-	return &ReservaHandler{reservaService: reservaService}
+func NewReservaAPIHandler(reservaService *logica.ReservaService) *ReservaAPIHandler {
+	return &ReservaAPIHandler{reservaService: reservaService}
 }
 
 func responderError(w http.ResponseWriter, err error) {
@@ -28,7 +28,7 @@ func responderError(w http.ResponseWriter, err error) {
 }
 
 // Crear una reserva
-func (h *ReservaHandler) CrearReserva(w http.ResponseWriter, r *http.Request) {
+func (h *ReservaAPIHandler) CrearReserva(w http.ResponseWriter, r *http.Request) {
 	var reserva dominio.Reserva
 	if err := json.NewDecoder(r.Body).Decode(&reserva); err != nil {
 		http.Error(w, "JSON inválido", http.StatusBadRequest) //400
@@ -47,7 +47,7 @@ func (h *ReservaHandler) CrearReserva(w http.ResponseWriter, r *http.Request) {
 }
 
 // Obtener una reserva con ID
-func (h *ReservaHandler) ObtenerReserva(w http.ResponseWriter, r *http.Request) {
+func (h *ReservaAPIHandler) ObtenerReserva(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest) //400
@@ -65,7 +65,7 @@ func (h *ReservaHandler) ObtenerReserva(w http.ResponseWriter, r *http.Request) 
 }
 
 // Obtener todas las reservas
-func (h *ReservaHandler) ObtenerReservas(w http.ResponseWriter, r *http.Request) {
+func (h *ReservaAPIHandler) ObtenerReservas(w http.ResponseWriter, r *http.Request) {
 	reservas, err := h.reservaService.ObtenerReservas(r.Context())
 	if err != nil {
 		responderError(w, err)
@@ -77,7 +77,7 @@ func (h *ReservaHandler) ObtenerReservas(w http.ResponseWriter, r *http.Request)
 }
 
 // Actualizar una reserva
-func (h *ReservaHandler) ActualizarReserva(w http.ResponseWriter, r *http.Request) {
+func (h *ReservaAPIHandler) ActualizarReserva(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -102,7 +102,7 @@ func (h *ReservaHandler) ActualizarReserva(w http.ResponseWriter, r *http.Reques
 }
 
 // Eliminar una reserva
-func (h *ReservaHandler) EliminarReserva(w http.ResponseWriter, r *http.Request) {
+func (h *ReservaAPIHandler) EliminarReserva(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)

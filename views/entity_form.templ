@@ -1,0 +1,132 @@
+package views
+
+import (
+	"fmt"
+
+	"Los5/pkg/dominio"
+)
+
+templ DepartamentoForm() {
+	<form action="/departamentos" method="post" class="form-grid">
+		<label>
+			Nombre *
+			<input type="text" name="nombre" required placeholder="Ej: Departamento Centro"/>
+		</label>
+		<label>
+			Dirección *
+			<input type="text" name="direccion" required placeholder="Ej: Av. España 123"/>
+		</label>
+		<label>
+			Descripción
+			<textarea name="descripcion" rows="2" placeholder="Opcional"></textarea>
+		</label>
+		<div class="checks">
+			<label><input type="checkbox" name="disponible" value="true" checked/> Disponible</label>
+			<label><input type="checkbox" name="limpio" value="true" checked/> Limpio</label>
+		</div>
+		<div class="form-actions">
+			<button type="submit">Guardar departamento</button>
+		</div>
+	</form>
+}
+
+templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
+	<form action="/reservas" method="post" class="form-grid">
+		<div class="form-row">
+			<label>
+				Departamento *
+				<select name="id_depto" required>
+					<option value="">Seleccione un departamento</option>
+					for _, d := range deptos {
+						<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
+					}
+				</select>
+			</label>
+			<label>
+				Huésped principal
+				<select name="id_huesped">
+					<option value="">Sin huésped asignado</option>
+					for _, h := range huespedes {
+						<option value={ fmt.Sprint(h.IDHuesped) }>{ h.Nombre } { h.Apellido }</option>
+					}
+				</select>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Fecha inicio *
+				<input type="date" name="fecha_inicio" required/>
+			</label>
+			<label>
+				Fecha fin *
+				<input type="date" name="fecha_fin" required/>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Cantidad de noches *
+				<input type="number" name="cant_noches" min="1" required/>
+			</label>
+			<label>
+				Precio base ($) *
+				<input type="number" step="0.01" name="precio_base" required/>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Descuento (%)
+				<input type="number" step="0.01" name="descuento" min="0" max="100" placeholder="Opcional"/>
+			</label>
+			<label>
+				Observaciones
+				<input type="text" name="observaciones" placeholder="Opcional"/>
+			</label>
+		</div>
+		<div class="form-actions">
+			<button type="submit">Guardar reserva</button>
+		</div>
+	</form>
+}
+
+templ HuespedForm(reservas []dominio.Reserva) {
+	<form action="/huespedes" method="post" class="form-grid">
+		<label>
+			Reserva
+			<select name="id_reserva">
+				<option value="">Sin reserva asignada</option>
+				for _, r := range reservas {
+					<option value={ fmt.Sprint(r.IDReserva) }>
+						{ fmt.Sprintf("#%d · %s → %s", r.IDReserva, r.FechaInicio.Format("2006-01-02"), r.FechaFin.Format("2006-01-02")) }
+					</option>
+				}
+			</select>
+		</label>
+		<div class="form-row">
+			<label>
+				Nombre *
+				<input type="text" name="nombre" required/>
+			</label>
+			<label>
+				Apellido *
+				<input type="text" name="apellido" required/>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Teléfono
+				<input type="text" name="telefono" placeholder="Opcional"/>
+			</label>
+			<label>
+				Email
+				<input type="email" name="email" placeholder="Opcional"/>
+			</label>
+		</div>
+		<label>
+			Observaciones
+			<textarea name="observaciones" rows="2" placeholder="Opcional"></textarea>
+		</label>
+		<div class="form-actions">
+			<button type="submit">Guardar huésped</button>
+		</div>
+	</form>
+}

@@ -1,97 +1,22 @@
 package views
 
-import (
-	"fmt"
-	"Los5/pkg/dominio"
-)
-
-
-templ HuespedesPage(huespedes []dominio.Huesped) {
+templ HuespedesPage(data HuespedesPageData) {
 	@Layout("Huéspedes", "huespedes") {
-		<div style="background-color: var(--cream-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--cream-300);">
-			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+		@ErrorBanner(data.Error)
+		<details class="panel" open>
+			<summary><strong>+ Nuevo huésped</strong></summary>
+			<div class="details-body">
+				@HuespedForm(data.Reservas)
+			</div>
+		</details>
+		<section class="panel">
+			<div class="section-header">
 				<div>
-					<h2 style="font-size: 1.25rem; font-weight: 700;">Padrón de Huéspedes</h2>
-					<p style="font-size: 0.75rem; color: var(--slate-600);">Registro general de clientes.</p>
+					<h2>Padrón de huéspedes</h2>
+					<p class="muted">Registro general de clientes.</p>
 				</div>
-				<a href="/web/huespedes/nuevo" class="btn btn-primary">
-					+ Nuevo Huésped
-				</a>
 			</div>
-
-
-			<div class="table-container">
-				<table class="data-table">
-					<thead>
-						<tr>
-							<th>Nombre y Apellido</th>
-							<th>Teléfono</th>
-							<th>Email</th>
-							<th>Observaciones</th>
-						</tr>
-					</thead>
-					<tbody>
-						if len(huespedes) == 0 {
-							<tr>
-								<td colspan="4" style="text-align: center; color: var(--slate-400); font-style: italic;">No hay huéspedes registrados.</td>
-							</tr>
-						}
-						for _, h := range huespedes {
-							<tr>
-								<td style="font-weight: 700;">{ h.Nombre } { h.Apellido }</td>
-								<td>{ valorTexto(h.Telefono) }</td>
-								<td>{ valorTexto(h.Email) }</td>
-								<td style="font-size: 0.75rem; color: var(--slate-600);">{ valorTexto(h.Observaciones) }</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-
-	}
-}
-
-templ HuespedFormPage(reservas []dominio.Reserva) {
-	@Layout("Nuevo Huésped", "huespedes") {
-		<div class="form-page">
-			<h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Nuevo Huésped</h2>
-			<form action="/web/huespedes" method="POST">
-				<div class="form-group">
-					<label>Reserva *</label>
-					<select name="id_reserva" required class="form-control">
-						for _, r := range reservas {
-							<option value={ fmt.Sprint(r.IDReserva) }>{ fmt.Sprintf("%s - %s", r.FechaInicio.Format("2006-01-02"), r.FechaFin.Format("2006-01-02")) }</option>
-						}
-					</select>
-				</div>
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-					<div class="form-group">
-						<label>Nombre *</label>
-						<input type="text" name="nombre" required class="form-control"/>
-					</div>
-					<div class="form-group">
-						<label>Apellido *</label>
-						<input type="text" name="apellido" required class="form-control"/>
-					</div>
-				</div>
-				<div class="form-group">
-					<label>Teléfono</label>
-					<input type="text" name="telefono" class="form-control"/>
-				</div>
-				<div class="form-group">
-					<label>Email</label>
-					<input type="email" name="email" class="form-control"/>
-				</div>
-				<div class="form-group">
-					<label>Observaciones</label>
-					<textarea name="observaciones" rows="2" class="form-control"></textarea>
-				</div>
-				<div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-					<a href="/web/huespedes" class="btn btn-secondary">Cancelar</a>
-					<button type="submit" class="btn btn-primary">Guardar Huésped</button>
-				</div>
-			</form>
-		</div>
+			@HuespedList(data.Huespedes)
+		</section>
 	}
 }

@@ -1,0 +1,17 @@
+package views
+
+templ ReservasPorDepartamentoPage(data ReservasPorDepartamentoPageData) {
+	@Layout("Reservas por departamento", "departamentos") {
+		@ErrorBanner(data.Error)
+		<section class="panel">
+			<div class="section-header">
+				<div>
+					<h2>Reservas de { data.Departamento.Nombre }</h2>
+					<p class="muted">{ data.Departamento.Direccion }</p>
+				</div>
+				<a href="/departamentos" class="btn btn-secondary">Volver a departamentos</a>
+			</div>
+			@ReservaSimpleList(data.Reservas)
+		</section>
+	}
+}

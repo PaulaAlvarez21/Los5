@@ -5,12 +5,14 @@ import (
 	handlers "Los5/pkg/handlers"
 	logica "Los5/pkg/logica"
 	repo "Los5/pkg/repositorios"
+	"Los5/views"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/a-h/templ"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -34,7 +36,7 @@ func main() {
 
 	queries := sqlc.New(connection)
 
-	// 3. Crear El repositorio común a todas las entidades y casos de uso
+	// 3. Crear el repositorio común a todas las entidades y casos de uso
 	BDrepository := repo.NewBDRepository(queries)
 
 	// 4. Crear los servicios / lógica de negocio
@@ -44,60 +46,39 @@ func main() {
 	huespedesServ := logica.NewHuespedService(BDrepository)
 	combinadoServ := logica.NewCombinadoService(BDrepository)
 
-	// 5. Crear los handlers
+	// 5. Crear los handlers web.
+	// Los handlers API (*API.go) se conservan compilando, pero no se registran.
 
-	deptosHandler := handlers.NewDepartamentoHandler(deptosServ)
-	reservasHandler := handlers.NewReservaHandler(reservasServ)
-	huespedesHandler := handlers.NewHuespedHandler(huespedesServ)
-	combinadoHandler := handlers.NewCombinadoHandler(combinadoServ)
-	webHandler := handlers.NewWebHandler(deptosServ, reservasServ, huespedesServ)
+	deptosHandler := handlers.NewDepartamentoWebHandler(deptosServ)
+	reservasHandler := handlers.NewReservaWebHandler(reservasServ, huespedesServ, combinadoServ)
+	huespedesHandler := handlers.NewHuespedWebHandler(huespedesServ, reservasServ)
+	combinadoHandler := handlers.NewCombinadoWebHandler(combinadoServ)
 
-	// 6. Configurar las rutas
+	// 6. Configurar las rutas web
+
+	http.Handle("GET /{$}", templ.Handler(views.IndexPage()))
+
+	// Archivos estáticos embebidos (Pico.css y estilos propios)
+	http.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(views.StaticFS))))
 
 	// Departamentos
-	http.HandleFunc("GET /departamentos", deptosHandler.ObtenerDepartamentos)
-	http.HandleFunc("GET /departamentos/{id}", deptosHandler.ObtenerDepartamento)
-	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamento)
-	http.HandleFunc("PUT /departamentos/{id}", deptosHandler.ActualizarDepartamento)
-	http.HandleFunc("DELETE /departamentos/{id}", deptosHandler.EliminarDepartamento)
-
-	// Huéspedes
-	http.HandleFunc("GET /huespedes", huespedesHandler.ObtenerHuespedes)
-	http.HandleFunc("GET /huespedes/{id}", huespedesHandler.ObtenerHuesped)
-	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuesped)
-	http.HandleFunc("PUT /huespedes/{id}", huespedesHandler.ActualizarHuesped)
-	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.EliminarHuesped)
+	http.HandleFunc("GET /departamentos", deptosHandler.DepartamentosWeb)
+	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamentoWeb)
+	http.HandleFunc("POST /departamentos/{id}/limpieza", deptosHandler.CambiarHigieneWeb)
 
 	// Reservas
-	http.HandleFunc("GET /reservas", reservasHandler.ObtenerReservas)
-	http.HandleFunc("GET /reservas/{id}", reservasHandler.ObtenerReserva)
-	http.HandleFunc("POST /reservas", reservasHandler.CrearReserva)
-	http.HandleFunc("PUT /reservas/{id}", reservasHandler.ActualizarReserva)
-	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReserva)
+	http.HandleFunc("GET /reservas", reservasHandler.ReservasWeb)
+	http.HandleFunc("POST /reservas", reservasHandler.CrearReservaWeb)
 
-	// Interfaz web
-	http.HandleFunc("GET /{$}", webHandler.InicioWeb)
-	http.HandleFunc("GET /static/styles.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "views/styles.css")
-	})
+	// Huéspedes
+	http.HandleFunc("GET /huespedes", huespedesHandler.HuespedesWeb)
+	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuespedWeb)
 
-	http.HandleFunc("GET /web/departamentos", webHandler.DepartamentosWeb)
-	http.HandleFunc("GET /web/departamentos/nuevo", webHandler.NuevoDepartamentoWeb)
-	http.HandleFunc("POST /web/departamentos", webHandler.CrearDepartamentoWeb)
-	http.HandleFunc("POST /web/departamentos/{id}/limpieza", webHandler.CambiarHigieneWeb)
-
-	http.HandleFunc("GET /web/reservas", combinadoHandler.ReservasWeb)
-	http.HandleFunc("GET /web/reservas/nuevo", webHandler.NuevaReservaWeb)
-	http.HandleFunc("POST /web/reservas", webHandler.CrearReservaWeb)
-
-	http.HandleFunc("GET /web/huespedes", webHandler.HuespedesWeb)
-	http.HandleFunc("GET /web/huespedes/nuevo", webHandler.NuevoHuespedWeb)
-	http.HandleFunc("POST /web/huespedes", webHandler.CrearHuespedWeb)
-
-	// Funcionalidades específicas combinadas
-	http.HandleFunc("GET /web/departamentos/{id}/huespedes", combinadoHandler.HuespedesPorDepartamentoWeb)
-	http.HandleFunc("GET /web/departamentos/{id}/disponibilidad", combinadoHandler.DisponibilidadWeb)
-	http.HandleFunc("GET /web/reservas/{id}/total", combinadoHandler.TotalReservaWeb)
+	// Casos de uso combinados
+	http.HandleFunc("GET /departamentos/{id}/reservas", combinadoHandler.ReservasPorDepartamentoWeb)
+	http.HandleFunc("GET /departamentos/{id}/huespedes", combinadoHandler.HuespedesPorDepartamentoWeb)
+	http.HandleFunc("GET /departamentos/{id}/disponibilidad", combinadoHandler.DisponibilidadWeb)
+	http.HandleFunc("GET /reservas/{id}/total", combinadoHandler.TotalReservaWeb)
 
 	// 7. Iniciar el servidor HTTP
 

@@ -1,5 +1,10 @@
 # Documentación de estructura de capas
 
+> **Nota (TP5):** la arquitectura en capas sigue vigente, pero la interfaz
+> principal pasó de API JSON a HTML server-rendered con templ y las rutas ya no
+> usan el prefijo `/web/`. El detalle actualizado de handlers, rutas, templates
+> y pruebas está en [`tp5_documentacion.md`](./tp5_documentacion.md).
+
 Este proyecto separa la aplicación en capas para respetar la modularización: cada capa tiene una responsabilidad única y se comunica con la siguiente a través de los **structs de dominio** (`pkg/dominio/`), evitando que tipos de sqlc (o de la base de datos) se filtren hacia arriba.
 
 ---

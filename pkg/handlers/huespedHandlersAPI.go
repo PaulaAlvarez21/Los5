@@ -9,16 +9,16 @@ import (
 	"Los5/pkg/logica"
 )
 
-type HuespedHandler struct {
+type HuespedAPIHandler struct {
 	huespedService *logica.HuespedService
 }
 
-func NewHuespedHandler(huespedService *logica.HuespedService) *HuespedHandler {
-	return &HuespedHandler{huespedService: huespedService}
+func NewHuespedAPIHandler(huespedService *logica.HuespedService) *HuespedAPIHandler {
+	return &HuespedAPIHandler{huespedService: huespedService}
 }
 
 // Crear un huesped
-func (h *HuespedHandler) CrearHuesped(w http.ResponseWriter, r *http.Request) {
+func (h *HuespedAPIHandler) CrearHuesped(w http.ResponseWriter, r *http.Request) {
 	var huesped dominio.Huesped
 	if err := json.NewDecoder(r.Body).Decode(&huesped); err != nil {
 		http.Error(w, "JSON inválido", http.StatusBadRequest) //400
@@ -37,7 +37,7 @@ func (h *HuespedHandler) CrearHuesped(w http.ResponseWriter, r *http.Request) {
 }
 
 // Obtener un huesped con ID
-func (h *HuespedHandler) ObtenerHuesped(w http.ResponseWriter, r *http.Request) {
+func (h *HuespedAPIHandler) ObtenerHuesped(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest) //400
@@ -55,7 +55,7 @@ func (h *HuespedHandler) ObtenerHuesped(w http.ResponseWriter, r *http.Request) 
 }
 
 // Obtener todos los huespedes
-func (h *HuespedHandler) ObtenerHuespedes(w http.ResponseWriter, r *http.Request) {
+func (h *HuespedAPIHandler) ObtenerHuespedes(w http.ResponseWriter, r *http.Request) {
 	huespedes, err := h.huespedService.ObtenerHuespedes(r.Context())
 	if err != nil {
 		responderError(w, err)
@@ -67,7 +67,7 @@ func (h *HuespedHandler) ObtenerHuespedes(w http.ResponseWriter, r *http.Request
 }
 
 // Actualizar un huesped
-func (h *HuespedHandler) ActualizarHuesped(w http.ResponseWriter, r *http.Request) {
+func (h *HuespedAPIHandler) ActualizarHuesped(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -92,7 +92,7 @@ func (h *HuespedHandler) ActualizarHuesped(w http.ResponseWriter, r *http.Reques
 }
 
 // Eliminar un huesped
-func (h *HuespedHandler) EliminarHuesped(w http.ResponseWriter, r *http.Request) {
+func (h *HuespedAPIHandler) EliminarHuesped(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)

@@ -1,7 +1,7 @@
 APP_NAME := Los5
 DB_URL := postgres://user:password@localhost:5432/mydb?sslmode=disable
 
-.PHONY: all run run-app reset generate sqlc templ migrate apply status build test test-api clean db borrar
+.PHONY: all run run-app reset generate sqlc templ migrate apply status build check test test-api test-web clean db borrar
 
 all: build
 
@@ -52,6 +52,11 @@ build: generate
 	@mkdir -p tmp
 	@go build -o tmp/$(APP_NAME) .
 
+# verificación rápida: regenera, compila todos los paquetes y corre vet
+check: generate
+	@go build ./...
+	@go vet ./...
+
 
 clean:
 	@rm -rf ./tmp
@@ -75,6 +80,17 @@ test-api: .env build borrar db
 	./tmp/$(APP_NAME) & echo $$! > tmp/server.pid; \
 	sleep 3; \
 	hurl --test requests.hurl; status=$$?; \
+	kill $$(cat tmp/server.pid) 2>/dev/null; \
+	rm -rf ./tmp; \
+	docker compose down -v; \
+	exit $$status
+
+# prueba el flujo HTML server-rendered (formularios, redirecciones y casos combinados)
+test-web: .env build borrar db
+	@set -a; . ./.env; set +a; \
+	./tmp/$(APP_NAME) & echo $$! > tmp/server.pid; \
+	sleep 3; \
+	hurl --test web.hurl; status=$$?; \
 	kill $$(cat tmp/server.pid) 2>/dev/null; \
 	rm -rf ./tmp; \
 	docker compose down -v; \

@@ -271,3 +271,207 @@ body {
 	border-radius: 0.5rem;
 	font-size: 0.875rem;
 }
+/* Paneles y secciones */
+.panel {
+	background-color: var(--cream-50);
+	border: 1px solid var(--cream-300);
+	border-radius: 1rem;
+	padding: 1.25rem;
+	margin-bottom: 1.5rem;
+}
+
+.panel > summary {
+	cursor: pointer;
+	color: var(--brand-900);
+}
+
+.details-body {
+	padding-top: 1rem;
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.section-header h2 {
+	margin-bottom: 0.25rem;
+	color: var(--brand-900);
+}
+
+/* Dashboard */
+.dashboard-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1rem;
+}
+
+.dashboard-card {
+	display: block;
+	padding: 1.25rem;
+	border: 1px solid var(--cream-300);
+	border-radius: 0.75rem;
+	background-color: #ffffff;
+	text-decoration: none;
+	color: inherit;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-card:hover {
+	border-color: var(--brand-500);
+	box-shadow: 0 4px 12px rgba(17, 29, 21, 0.08);
+}
+
+.dashboard-card h3 {
+	color: var(--brand-900);
+	margin-bottom: 0.5rem;
+}
+
+.dashboard-link {
+	display: inline-block;
+	margin-top: 0.75rem;
+	font-weight: 600;
+	color: var(--brand-600);
+}
+
+/* Formularios */
+.form-grid {
+	display: grid;
+	gap: 1rem;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1rem;
+}
+
+.form-grid label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--brand-900);
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+	width: 100%;
+	margin-top: 0.25rem;
+}
+
+.checks {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.checks label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 500;
+}
+
+.checks input {
+	width: auto;
+	margin: 0;
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+}
+
+.filter-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 1rem;
+	align-items: end;
+	margin-bottom: 1rem;
+	padding: 1rem;
+	background-color: var(--cream-100);
+	border: 1px solid var(--cream-300);
+	border-radius: 0.75rem;
+}
+
+.summary-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 1rem;
+	align-items: center;
+	padding: 1rem;
+	background-color: var(--cream-100);
+	border: 1px solid var(--cream-300);
+	border-radius: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+/* Tabla: celdas auxiliares */
+.empty-cell {
+	text-align: center;
+	color: var(--slate-600);
+	padding: 1.5rem 1rem;
+}
+
+.row-actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+.strong {
+	font-weight: 600;
+}
+
+.mono {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.success-text {
+	color: var(--success-text);
+}
+
+.muted {
+	color: var(--slate-600);
+}
+
+/* Alertas */
+.alert {
+	padding: 0.85rem 1rem;
+	border-radius: 0.5rem;
+	margin-bottom: 1rem;
+	font-weight: 500;
+}
+
+.alert-error {
+	background-color: var(--danger-bg);
+	color: var(--danger-text);
+	border: 1px solid var(--danger-border);
+}
+
+.error-panel {
+	text-align: center;
+}
+
+.error-panel h2 {
+	color: var(--danger-text);
+}
+
+/* Ajustes sobre Pico.css */
+.nav-pills a {
+	box-shadow: none;
+}
+
+.btn {
+	box-shadow: none;
+}
+
+.data-table td .btn {
+	padding: 0.35rem 0.7rem;
+	font-size: 0.8rem;
+}

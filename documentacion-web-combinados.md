@@ -1,5 +1,11 @@
 # Interfaz web de casos de uso combinados
 
+> **Nota (TP5):** este documento describe la entrega anterior, cuando la
+> interfaz web vivía bajo `/web/...` y los handlers se llamaban `WebHandler` y
+> `CombinadoHandler`. La implementación vigente usa rutas en la raíz, handlers
+> separados por entidad (`*HandlersWEB.go`) y está documentada en
+> [`tp5_documentacion.md`](./tp5_documentacion.md).
+
 Fecha: 2026-10-28
 
 ## Objetivo

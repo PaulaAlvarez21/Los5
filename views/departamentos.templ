@@ -1,83 +1,22 @@
 package views
 
-import (
-	"fmt"
-	"Los5/pkg/dominio"
-)
-
-templ DepartamentosPage(deptos []dominio.Departamento) {
+templ DepartamentosPage(data DepartamentosPageData) {
 	@Layout("Departamentos", "departamentos") {
-		<div class="page-header">
-			<div>
-				<h2 style="font-size: 1.25rem; font-weight: 700;">Catálogo de Departamentos</h2>
-				<p style="font-size: 0.75rem; color: var(--slate-600);">Administración de oferta inmobiliaria e higiene.</p>
+		@ErrorBanner(data.Error)
+		<details class="panel" open>
+			<summary><strong>+ Nuevo departamento</strong></summary>
+			<div class="details-body">
+				@DepartamentoForm()
 			</div>
-			<a href="/web/departamentos/nuevo" class="btn btn-primary">
-				+ Nuevo Departamento
-			</a>
-		</div>
-
-		<div class="grid-cards">
-			for _, d := range deptos {
-				@DeptoCard(d)
-			}
-		</div>
-
-	}
-}
-
-templ DeptoCard(d dominio.Departamento) {
-	<div class="depto-card">
-		<div>
-			<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-				<h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 700;">{ d.Nombre }</h3>
-				if d.Limpio {
-					<span class="badge badge-clean">🧹 Limpio</span>
-				} else {
-					<span class="badge badge-dirty">⚠️ Mantenimiento</span>
-				}
+		</details>
+		<section class="panel">
+			<div class="section-header">
+				<div>
+					<h2>Catálogo de departamentos</h2>
+					<p class="muted">Administración de oferta inmobiliaria e higiene.</p>
+				</div>
 			</div>
-			<p style="font-size: 0.75rem; color: var(--slate-600); margin-bottom: 0.5rem;">📍 { d.Direccion }</p>
-			<p style="font-size: 0.825rem; color: var(--slate-800);">{ valorTexto(d.Descripcion) }</p>
-		</div>
-		<div style="display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--cream-200);">
-			<form action={ templ.URL(fmt.Sprintf("/web/departamentos/%d/limpieza", d.IDDepto)) } method="POST" style="flex: 1;">
-				<button type="submit" class="btn btn-secondary" style="width: 100%;">Cambiar Higiene</button>
-			</form>
-			<a href={ templ.URL(fmt.Sprintf("/web/reservas?depto_id=%d", d.IDDepto)) } class="btn btn-primary" style="flex: 1; text-align: center;">Ver Reservas</a>
-		</div>
-	</div>
-}
-
-templ DepartamentoFormPage() {
-	@Layout("Nuevo Departamento", "departamentos") {
-		<div class="form-page">
-			<h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Nuevo Departamento</h2>
-			<form action="/web/departamentos" method="POST">
-				<div class="form-group">
-					<label>Nombre *</label>
-					<input type="text" name="nombre" required class="form-control"/>
-				</div>
-				<div class="form-group">
-					<label>Dirección *</label>
-					<input type="text" name="direccion" required class="form-control"/>
-				</div>
-				<div class="form-group">
-					<label>Descripción</label>
-					<textarea name="descripcion" rows="3" class="form-control"></textarea>
-				</div>
-				<div class="form-group">
-					<label>Estado de Higiene</label>
-					<select name="limpio" class="form-control">
-						<option value="true">🧹 Limpio</option>
-						<option value="false">⚠️ Mantenimiento</option>
-					</select>
-				</div>
-				<div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-					<a href="/web/departamentos" class="btn btn-secondary">Cancelar</a>
-					<button type="submit" class="btn btn-primary">Guardar</button>
-				</div>
-			</form>
-		</div>
+			@DepartamentoList(data.Departamentos)
+		</section>
 	}
 }

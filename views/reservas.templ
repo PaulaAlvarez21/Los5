@@ -1,130 +1,50 @@
 package views
 
-import (
-	"fmt"
-	"Los5/pkg/dominio"
-)
+import "fmt"
 
-templ ReservasPage(reservas []dominio.ReservaConDetalle, deptos []dominio.Departamento, huespedes []dominio.Huesped, errMessage string) {
+templ ReservasPage(data ReservasPageData) {
 	@Layout("Reservas", "reservas") {
-		<div style="background-color: var(--cream-50); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--cream-300);">
-			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-				<div>
-					<h2 style="font-size: 1.25rem; font-weight: 700;">Gestión de Reservas</h2>
-					<p style="font-size: 0.75rem; color: var(--slate-600);">Registro y control de ocupación.</p>
-				</div>
-				<a href="/web/reservas/nuevo" class="btn btn-primary">
-					+ Nueva Reserva
-				</a>
+		@ErrorBanner(data.Error)
+		<details class="panel" open>
+			<summary><strong>+ Nueva reserva</strong></summary>
+			<div class="details-body">
+				@ReservaForm(data.Departamentos, data.Huespedes)
 			</div>
-
-			<!-- Filtros HTTP GET -->
-			<form action="/web/reservas" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background-color: var(--cream-100); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+		</details>
+		<section class="panel">
+			<div class="section-header">
 				<div>
-					<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Departamento</label>
-					<select name="depto_id" class="form-control">
+					<h2>Gestión de reservas</h2>
+					<p class="muted">Registro y control de ocupación.</p>
+				</div>
+			</div>
+			<form action="/reservas" method="get" class="filter-grid">
+				<label>
+					Departamento
+					<select name="depto_id">
 						<option value="">-- Todos --</option>
-						for _, d := range deptos {
-							<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
+						for _, d := range data.Departamentos {
+							if data.Filtro.DeptoID == fmt.Sprint(d.IDDepto) {
+								<option value={ fmt.Sprint(d.IDDepto) } selected>{ d.Nombre }</option>
+							} else {
+								<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
+							}
 						}
 					</select>
-				</div>
-				<div>
-					<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Desde</label>
-					<input type="date" name="desde" class="form-control"/>
-				</div>
-				<div>
-					<label style="font-size: 0.75rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Hasta</label>
-					<input type="date" name="hasta" class="form-control"/>
-				</div>
-				<div style="display: flex; align-self: flex-end;">
-					<button type="submit" class="btn btn-primary" style="width: 100%;">Filtrar</button>
+				</label>
+				<label>
+					Desde
+					<input type="date" name="desde" value={ data.Filtro.Desde }/>
+				</label>
+				<label>
+					Hasta
+					<input type="date" name="hasta" value={ data.Filtro.Hasta }/>
+				</label>
+				<div class="form-actions">
+					<button type="submit">Filtrar</button>
 				</div>
 			</form>
-
-			<!-- Tabla de Reservas -->
-			<div class="table-container">
-				<table class="data-table">
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Departamento</th>
-							<th>Huésped</th>
-							<th>Período</th>
-							<th>Noches</th>
-							<th>Precio Base</th>
-						</tr>
-					</thead>
-					<tbody>
-						if len(reservas) == 0 {
-							<tr>
-								<td colspan="6" style="text-align: center; color: var(--slate-400); font-style: italic;">No hay reservas registradas.</td>
-							</tr>
-						}
-						for _, r := range reservas {
-							<tr>
-								<td style="font-family: monospace; font-weight: 700;">#{ fmt.Sprint(r.IDReserva) }</td>
-								<td style="font-weight: 600;">{ r.NombreDepto }</td>
-								<td>{ r.NombreHuesped } { r.ApellidoHuesped }</td>
-								<td>{ r.FechaInicio.Format("2006-01-02") } &rarr; { r.FechaFin.Format("2006-01-02") }</td>
-								<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
-								<td style="font-weight: 600; color: var(--success-text);">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-
-	}
-}
-
-templ ReservaFormPage(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
-	@Layout("Nueva Reserva", "reservas") {
-		<div class="form-page">
-			<h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Nueva Reserva</h2>
-			<form action="/web/reservas" method="POST">
-				<div class="form-group">
-					<label>Departamento *</label>
-					<select name="id_depto" required class="form-control">
-						for _, d := range deptos {
-							<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
-						}
-					</select>
-				</div>
-				<div class="form-group">
-					<label>Huésped Principal *</label>
-					<select name="id_huesped" required class="form-control">
-						for _, h := range huespedes {
-							<option value={ fmt.Sprint(h.IDHuesped) }>{ h.Nombre } { h.Apellido }</option>
-						}
-					</select>
-				</div>
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-					<div class="form-group">
-						<label>Fecha Inicio *</label>
-						<input type="date" name="fecha_inicio" required class="form-control"/>
-					</div>
-					<div class="form-group">
-						<label>Fecha Fin *</label>
-						<input type="date" name="fecha_fin" required class="form-control"/>
-					</div>
-				</div>
-				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-					<div class="form-group">
-						<label>Cant. Noches *</label>
-						<input type="number" name="cant_noches" min="1" required class="form-control"/>
-					</div>
-					<div class="form-group">
-						<label>Precio Base ($) *</label>
-						<input type="number" step="0.01" name="precio_base" required class="form-control"/>
-					</div>
-				</div>
-				<div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-					<a href="/web/reservas" class="btn btn-secondary">Cancelar</a>
-					<button type="submit" class="btn btn-primary">Guardar Reserva</button>
-				</div>
-			</form>
-		</div>
+			@ReservaList(data.Reservas)
+		</section>
 	}
 }

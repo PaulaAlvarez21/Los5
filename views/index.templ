@@ -1,0 +1,31 @@
+package views
+
+templ IndexPage() {
+	@Layout("Inicio", "inicio") {
+		<section class="panel">
+			<div class="section-header">
+				<div>
+					<h2>Panel de gestión</h2>
+					<p class="muted">Seleccione una sección para administrar Los 5 Alquileres.</p>
+				</div>
+			</div>
+			<div class="dashboard-grid">
+				<a href="/departamentos" class="dashboard-card">
+					<h3>Departamentos</h3>
+					<p class="muted">Alta, estado de higiene, reservas y disponibilidad.</p>
+					<span class="dashboard-link">Ir a departamentos →</span>
+				</a>
+				<a href="/reservas" class="dashboard-card">
+					<h3>Reservas</h3>
+					<p class="muted">Alta de reservas, filtros por departamento y fechas, y totales.</p>
+					<span class="dashboard-link">Ir a reservas →</span>
+				</a>
+				<a href="/huespedes" class="dashboard-card">
+					<h3>Huéspedes</h3>
+					<p class="muted">Padrón de clientes y asignación a reservas.</p>
+					<span class="dashboard-link">Ir a huéspedes →</span>
+				</a>
+			</div>
+		</section>
+	}
+}

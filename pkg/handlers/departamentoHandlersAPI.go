@@ -9,16 +9,16 @@ import (
 	"Los5/pkg/logica"
 )
 
-type DepartamentoHandler struct {
+type DepartamentoAPIHandler struct {
 	departamentoService *logica.DepartamentoService
 }
 
-func NewDepartamentoHandler(departamentoService *logica.DepartamentoService) *DepartamentoHandler {
-	return &DepartamentoHandler{departamentoService: departamentoService}
+func NewDepartamentoAPIHandler(departamentoService *logica.DepartamentoService) *DepartamentoAPIHandler {
+	return &DepartamentoAPIHandler{departamentoService: departamentoService}
 }
 
 // Crear un departamento
-func (h *DepartamentoHandler) CrearDepartamento(w http.ResponseWriter, r *http.Request) {
+func (h *DepartamentoAPIHandler) CrearDepartamento(w http.ResponseWriter, r *http.Request) {
 	var departamento dominio.Departamento
 	if err := json.NewDecoder(r.Body).Decode(&departamento); err != nil {
 		http.Error(w, "JSON inválido", http.StatusBadRequest) //400
@@ -37,7 +37,7 @@ func (h *DepartamentoHandler) CrearDepartamento(w http.ResponseWriter, r *http.R
 }
 
 // Obtener un departamento con ID
-func (h *DepartamentoHandler) ObtenerDepartamento(w http.ResponseWriter, r *http.Request) {
+func (h *DepartamentoAPIHandler) ObtenerDepartamento(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest) //400
@@ -55,7 +55,7 @@ func (h *DepartamentoHandler) ObtenerDepartamento(w http.ResponseWriter, r *http
 }
 
 // Obtener todos los departamentos
-func (h *DepartamentoHandler) ObtenerDepartamentos(w http.ResponseWriter, r *http.Request) {
+func (h *DepartamentoAPIHandler) ObtenerDepartamentos(w http.ResponseWriter, r *http.Request) {
 	departamentos, err := h.departamentoService.ObtenerDepartamentos(r.Context())
 	if err != nil {
 		responderError(w, err)
@@ -67,7 +67,7 @@ func (h *DepartamentoHandler) ObtenerDepartamentos(w http.ResponseWriter, r *htt
 }
 
 // Actualizar un departamento
-func (h *DepartamentoHandler) ActualizarDepartamento(w http.ResponseWriter, r *http.Request) {
+func (h *DepartamentoAPIHandler) ActualizarDepartamento(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -92,7 +92,7 @@ func (h *DepartamentoHandler) ActualizarDepartamento(w http.ResponseWriter, r *h
 }
 
 // Eliminar un departamento
-func (h *DepartamentoHandler) EliminarDepartamento(w http.ResponseWriter, r *http.Request) {
+func (h *DepartamentoAPIHandler) EliminarDepartamento(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)

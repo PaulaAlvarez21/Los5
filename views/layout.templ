@@ -2,40 +2,18 @@ package views
 
 templ Layout(title string, activeTab string) {
 	<!DOCTYPE html>
-	<html lang="es">
+	<html lang="es" data-theme="light">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>{ title } - Los 5 Alquileres</title>
-			<link rel="preconnect" href="https://fonts.googleapis.com"/>
-			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-			<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+			<link rel="stylesheet" href="/static/pico.min.css"/>
 			<link rel="stylesheet" href="/static/styles.css"/>
 		</head>
 		<body>
 			@Header(activeTab)
-			<main class="main-content">
-				<div class="page-header">
-			<div>
-				<h2 style="font-size: 1.25rem; font-weight: 700;">Gestión de Los 5 Alquileres</h2>
-				<p style="font-size: 0.875rem; color: var(--slate-600);">Seleccione una sección para comenzar.</p>
-			</div>
-		</div>
-		<div class="grid-cards">
-			<a href="/web/reservas" class="depto-card" style="text-decoration: none; color: inherit;">
-				<h3 style="font-size: 1.25rem; font-weight: 700;">Reservas</h3>
-				<p style="color: var(--slate-600);">Consultar y registrar reservas.</p>
-			</a>
-			<a href="/web/huespedes" class="depto-card" style="text-decoration: none; color: inherit;">
-				<h3 style="font-size: 1.25rem; font-weight: 700;">Huéspedes</h3>
-				<p style="color: var(--slate-600);">Consultar y registrar huéspedes.</p>
-			</a>
-			<a href="/web/departamentos" class="depto-card" style="text-decoration: none; color: inherit;">
-				<h3 style="font-size: 1.25rem; font-weight: 700;">Departamentos</h3>
-				<p style="color: var(--slate-600);">Consultar y registrar departamentos.</p>
-			</a>
-		</div>
-				{ children...}
+			<main class="container main-content">
+				{ children... }
 			</main>
 		</body>
 	</html>
@@ -45,21 +23,20 @@ templ Header(activeTab string) {
 	<header class="header-bar">
 		<div class="header-container">
 			<a href="/" class="brand-logo">
-				<div>
-					<h1 class="brand-title">Los 5 Alquileres</h1>
-				</div>
+				<h1 class="brand-title">Los 5 Alquileres</h1>
 			</a>
 			<nav class="nav-pills">
-				if activeTab == ""{
-					<a href="/web/reservas" class="nav-link">Reservas</a>
-					<a href="/web/departamentos" class="nav-link">Departamento</a>
-					<a href="/web/huespedes" class="nav-link">Huespedes</a>
-				}else{
-					<a href="/web/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
-					<a href="/web/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
-					<a href="/web/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
-				}
+				<a href="/" class={ "nav-link", templ.KV("active", activeTab == "inicio") }>Inicio</a>
+				<a href="/departamentos" class={ "nav-link", templ.KV("active", activeTab == "departamentos") }>Departamentos</a>
+				<a href="/reservas" class={ "nav-link", templ.KV("active", activeTab == "reservas") }>Reservas</a>
+				<a href="/huespedes" class={ "nav-link", templ.KV("active", activeTab == "huespedes") }>Huéspedes</a>
 			</nav>
 		</div>
-		</header> 
+	</header>
+}
+
+templ ErrorBanner(mensaje string) {
+	if mensaje != "" {
+		<div class="alert alert-error" role="alert">{ mensaje }</div>
+	}
 }

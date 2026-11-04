@@ -30,7 +30,7 @@ FROM alpine:3.20
 RUN adduser -D -u 1000 app
 USER app
 
-#especifico de nuevo para la etapa dos porque en main.go pusimos ./static en lugar de /static, el workdir es para asegurarnos que lo encuentra
+#la app no depende de archivos estáticos externos: el CSS se embebe con go:embed
 WORKDIR /app
 
 #copia desde la etapa anterior
