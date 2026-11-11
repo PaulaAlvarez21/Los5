@@ -65,14 +65,17 @@ func main() {
 	http.HandleFunc("GET /departamentos", deptosHandler.DepartamentosWeb)
 	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamentoWeb)
 	http.HandleFunc("POST /departamentos/{id}/limpieza", deptosHandler.CambiarHigieneWeb)
+	http.HandleFunc("POST /departamentos/{id}/eliminar", deptosHandler.EliminarDepartamentoWeb)
 
 	// Reservas
 	http.HandleFunc("GET /reservas", reservasHandler.ReservasWeb)
 	http.HandleFunc("POST /reservas", reservasHandler.CrearReservaWeb)
+	http.HandleFunc("POST /reservas/{id}/eliminar", reservasHandler.EliminarReservaWeb)
 
 	// Huéspedes
 	http.HandleFunc("GET /huespedes", huespedesHandler.HuespedesWeb)
 	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuespedWeb)
+	http.HandleFunc("POST /huespedes/{id}/eliminar", huespedesHandler.EliminarHuespedWeb)
 
 	// Casos de uso combinados
 	http.HandleFunc("GET /departamentos/{id}/reservas", combinadoHandler.ReservasPorDepartamentoWeb)

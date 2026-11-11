@@ -82,3 +82,18 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 
 	http.Redirect(w, r, "/huespedes", http.StatusSeeOther)
 }
+
+func (h *HuespedWebHandler) EliminarHuespedWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if err := h.huespedService.EliminarHuesped(r.Context(), id); err != nil {
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	http.Redirect(w, r, "/huespedes", http.StatusSeeOther)
+}

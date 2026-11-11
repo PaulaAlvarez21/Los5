@@ -44,6 +44,9 @@ templ DepartamentoList(deptos []dominio.Departamento) {
 								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/reservas", d.IDDepto)) } class="btn btn-secondary">Reservas</a>
 								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/huespedes", d.IDDepto)) } class="btn btn-secondary">Huéspedes</a>
 								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/disponibilidad", d.IDDepto)) } class="btn btn-secondary">Disponibilidad</a>
+								<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/eliminar", d.IDDepto)) } method="post">
+									<button type="submit" class="btn btn-danger">Eliminar</button>
+								</form>
 							</div>
 						</td>
 					</tr>
@@ -65,12 +68,13 @@ templ ReservaList(reservas []dominio.ReservaConDetalle) {
 					<th>Noches</th>
 					<th>Precio base</th>
 					<th>Total</th>
+					<th>Acciones</th>
 				</tr>
 			</thead>
 			<tbody>
 				if len(reservas) == 0 {
 					<tr>
-						<td colspan="7" class="empty-cell">No hay reservas registradas.</td>
+						<td colspan="8" class="empty-cell">No hay reservas registradas.</td>
 					</tr>
 				}
 				for _, r := range reservas {
@@ -82,7 +86,12 @@ templ ReservaList(reservas []dominio.ReservaConDetalle) {
 						<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
 						<td class="strong success-text">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
 						<td>
-							<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
+							<div class="row-actions">
+								<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
+								<form action={ templ.URL(fmt.Sprintf("/reservas/%d/eliminar", r.IDReserva)) } method="post">
+									<button type="submit" class="btn btn-danger">Eliminar</button>
+								</form>
+							</div>
 						</td>
 					</tr>
 				}
@@ -100,12 +109,13 @@ templ HuespedList(huespedes []dominio.Huesped) {
 					<th>Teléfono</th>
 					<th>Email</th>
 					<th>Observaciones</th>
+					<th>Acciones</th>
 				</tr>
 			</thead>
 			<tbody>
 				if len(huespedes) == 0 {
 					<tr>
-						<td colspan="4" class="empty-cell">No hay huéspedes registrados.</td>
+						<td colspan="5" class="empty-cell">No hay huéspedes registrados.</td>
 					</tr>
 				}
 				for _, h := range huespedes {
@@ -114,6 +124,13 @@ templ HuespedList(huespedes []dominio.Huesped) {
 						<td>{ valorTexto(h.Telefono) }</td>
 						<td>{ valorTexto(h.Email) }</td>
 						<td class="muted">{ valorTexto(h.Observaciones) }</td>
+						<td>
+							<div class="row-actions">
+								<form action={ templ.URL(fmt.Sprintf("/huespedes/%d/eliminar", h.IDHuesped)) } method="post">
+									<button type="submit" class="btn btn-danger">Eliminar</button>
+								</form>
+							</div>
+						</td>
 					</tr>
 				}
 			</tbody>

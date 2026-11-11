@@ -144,3 +144,18 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 
 	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
 }
+
+func (h *ReservaWebHandler) EliminarReservaWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if err := h.reservaService.EliminarReserva(r.Context(), id); err != nil {
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
+}

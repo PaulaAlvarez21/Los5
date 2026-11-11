@@ -77,3 +77,18 @@ func (h *DepartamentoWebHandler) CambiarHigieneWeb(w http.ResponseWriter, r *htt
 
 	http.Redirect(w, r, "/departamentos", http.StatusSeeOther)
 }
+
+func (h *DepartamentoWebHandler) EliminarDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if err := h.departamentoService.EliminarDepartamento(r.Context(), id); err != nil {
+		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	http.Redirect(w, r, "/departamentos", http.StatusSeeOther)
+}

@@ -205,6 +205,15 @@ body {
 	background-color: var(--cream-300);
 }
 
+.btn-danger {
+	background-color: var(--danger-text);
+	color: #ffffff;
+}
+
+.btn-danger:hover {
+	background-color: #991b1b;
+}
+
 /* Insignias / Badges */
 .badge {
 	display: inline-block;
