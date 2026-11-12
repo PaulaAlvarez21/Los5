@@ -6,6 +6,46 @@ import (
 	"Los5/pkg/dominio"
 )
 
+templ DepartamentoRow(d dominio.Departamento) {
+	<tr>
+		<td class="strong">{ d.Nombre }</td>
+		<td>{ d.Direccion }</td>
+		<td>{ valorTexto(d.Descripcion) }</td>
+		<td>
+			if d.Limpio {
+				<span class="badge badge-clean">Limpio</span>
+			} else {
+				<span class="badge badge-dirty">Mantenimiento</span>
+			}
+		</td>
+		<td>
+			<div class="row-actions">
+				<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/limpieza", d.IDDepto)) } method="post">
+					<button type="submit" class="btn btn-secondary">Cambiar higiene</button>
+				</form>
+				<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/reservas", d.IDDepto)) } class="btn btn-secondary">Reservas</a>
+				<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/huespedes", d.IDDepto)) } class="btn btn-secondary">Huéspedes</a>
+				<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/disponibilidad", d.IDDepto)) } class="btn btn-secondary">Disponibilidad</a>
+				<button
+					type="button"
+					class="btn btn-danger"
+					hx-delete={ templ.URL(fmt.Sprintf("/departamentos/%d", d.IDDepto)) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+					hx-confirm="¿Borrar este departamento?">
+					Borrar
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ DepartamentoEmptyRow() {
+	<tr id="departamento-empty">
+		<td colspan="5" class="empty-cell">No hay departamentos registrados.</td>
+	</tr>
+}
+
 templ DepartamentoList(deptos []dominio.Departamento) {
 	<div class="table-container">
 		<table class="data-table">
@@ -18,42 +58,47 @@ templ DepartamentoList(deptos []dominio.Departamento) {
 					<th>Acciones</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="departamento-rows">
 				if len(deptos) == 0 {
-					<tr>
-						<td colspan="5" class="empty-cell">No hay departamentos registrados.</td>
-					</tr>
+					@DepartamentoEmptyRow()
 				}
 				for _, d := range deptos {
-					<tr>
-						<td class="strong">{ d.Nombre }</td>
-						<td>{ d.Direccion }</td>
-						<td>{ valorTexto(d.Descripcion) }</td>
-						<td>
-							if d.Limpio {
-								<span class="badge badge-clean">Limpio</span>
-							} else {
-								<span class="badge badge-dirty">Mantenimiento</span>
-							}
-						</td>
-						<td>
-							<div class="row-actions">
-								<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/limpieza", d.IDDepto)) } method="post">
-									<button type="submit" class="btn btn-secondary">Cambiar higiene</button>
-								</form>
-								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/reservas", d.IDDepto)) } class="btn btn-secondary">Reservas</a>
-								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/huespedes", d.IDDepto)) } class="btn btn-secondary">Huéspedes</a>
-								<a href={ templ.URL(fmt.Sprintf("/departamentos/%d/disponibilidad", d.IDDepto)) } class="btn btn-secondary">Disponibilidad</a>
-								<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/eliminar", d.IDDepto)) } method="post">
-									<button type="submit" class="btn btn-danger">Eliminar</button>
-								</form>
-							</div>
-						</td>
-					</tr>
+					@DepartamentoRow(d)
 				}
 			</tbody>
 		</table>
 	</div>
+}
+
+templ ReservaRow(r dominio.ReservaConDetalle) {
+	<tr>
+		<td class="mono strong">#{ fmt.Sprint(r.IDReserva) }</td>
+		<td class="strong">{ r.NombreDepto }</td>
+		<td>{ r.NombreHuesped }</td>
+		<td>{ r.FechaInicio.Format("2006-01-02") } → { r.FechaFin.Format("2006-01-02") }</td>
+		<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
+		<td class="strong success-text">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
+		<td>
+			<div class="row-actions">
+				<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
+				<button
+					type="button"
+					class="btn btn-danger"
+					hx-delete={ templ.URL(fmt.Sprintf("/reservas/%d", r.IDReserva)) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+					hx-confirm="¿Borrar esta reserva?">
+					Borrar
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ ReservaEmptyRow() {
+	<tr id="reserva-empty">
+		<td colspan="8" class="empty-cell">No hay reservas registradas.</td>
+	</tr>
 }
 
 templ ReservaList(reservas []dominio.ReservaConDetalle) {
@@ -71,33 +116,44 @@ templ ReservaList(reservas []dominio.ReservaConDetalle) {
 					<th>Acciones</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="reserva-rows">
 				if len(reservas) == 0 {
-					<tr>
-						<td colspan="8" class="empty-cell">No hay reservas registradas.</td>
-					</tr>
+					@ReservaEmptyRow()
 				}
 				for _, r := range reservas {
-					<tr>
-						<td class="mono strong">#{ fmt.Sprint(r.IDReserva) }</td>
-						<td class="strong">{ r.NombreDepto }</td>
-						<td>{ r.NombreHuesped }</td>
-						<td>{ r.FechaInicio.Format("2006-01-02") } → { r.FechaFin.Format("2006-01-02") }</td>
-						<td>{ fmt.Sprint(r.CantNoches) } noc.</td>
-						<td class="strong success-text">${ fmt.Sprintf("%.2f", r.PrecioBase) }</td>
-						<td>
-							<div class="row-actions">
-								<a href={ templ.URL(fmt.Sprintf("/reservas/%d/total", r.IDReserva)) } class="btn btn-secondary">Ver total</a>
-								<form action={ templ.URL(fmt.Sprintf("/reservas/%d/eliminar", r.IDReserva)) } method="post">
-									<button type="submit" class="btn btn-danger">Eliminar</button>
-								</form>
-							</div>
-						</td>
-					</tr>
+					@ReservaRow(r)
 				}
 			</tbody>
 		</table>
 	</div>
+}
+
+templ HuespedRow(h dominio.Huesped) {
+	<tr>
+		<td class="strong">{ h.Nombre } { h.Apellido }</td>
+		<td>{ valorTexto(h.Telefono) }</td>
+		<td>{ valorTexto(h.Email) }</td>
+		<td class="muted">{ valorTexto(h.Observaciones) }</td>
+		<td>
+			<div class="row-actions">
+				<button
+					type="button"
+					class="btn btn-danger"
+					hx-delete={ templ.URL(fmt.Sprintf("/huespedes/%d", h.IDHuesped)) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+					hx-confirm="¿Borrar este huésped?">
+					Borrar
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+templ HuespedEmptyRow() {
+	<tr id="huesped-empty">
+		<td colspan="5" class="empty-cell">No hay huéspedes registrados.</td>
+	</tr>
 }
 
 templ HuespedList(huespedes []dominio.Huesped) {
@@ -112,26 +168,12 @@ templ HuespedList(huespedes []dominio.Huesped) {
 					<th>Acciones</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="huesped-rows">
 				if len(huespedes) == 0 {
-					<tr>
-						<td colspan="5" class="empty-cell">No hay huéspedes registrados.</td>
-					</tr>
+					@HuespedEmptyRow()
 				}
 				for _, h := range huespedes {
-					<tr>
-						<td class="strong">{ h.Nombre } { h.Apellido }</td>
-						<td>{ valorTexto(h.Telefono) }</td>
-						<td>{ valorTexto(h.Email) }</td>
-						<td class="muted">{ valorTexto(h.Observaciones) }</td>
-						<td>
-							<div class="row-actions">
-								<form action={ templ.URL(fmt.Sprintf("/huespedes/%d/eliminar", h.IDHuesped)) } method="post">
-									<button type="submit" class="btn btn-danger">Eliminar</button>
-								</form>
-							</div>
-						</td>
-					</tr>
+					@HuespedRow(h)
 				}
 			</tbody>
 		</table>
@@ -174,4 +216,32 @@ templ ReservaSimpleList(reservas []dominio.Reserva) {
 			</tbody>
 		</table>
 	</div>
+}
+
+// DepartamentoCreado devuelve la fila recién creada y, mediante swaps OOB,
+// elimina la fila vacía si era la primera entidad y cierra el modal.
+// La fila OOB va como hermano directo de la fila nueva (no dentro de <template>)
+// porque HTMX no busca atributos hx-swap-oob dentro del contenido de un template.
+templ DepartamentoCreado(d dominio.Departamento, quitarVacio bool) {
+	@DepartamentoRow(d)
+	if quitarVacio {
+		<tr id="departamento-empty" hx-swap-oob="delete"></tr>
+	}
+	<div id="modal-root" hx-swap-oob="innerHTML"></div>
+}
+
+templ ReservaCreada(r dominio.ReservaConDetalle, quitarVacio bool) {
+	@ReservaRow(r)
+	if quitarVacio {
+		<tr id="reserva-empty" hx-swap-oob="delete"></tr>
+	}
+	<div id="modal-root" hx-swap-oob="innerHTML"></div>
+}
+
+templ HuespedCreado(h dominio.Huesped, quitarVacio bool) {
+	@HuespedRow(h)
+	if quitarVacio {
+		<tr id="huesped-empty" hx-swap-oob="delete"></tr>
+	}
+	<div id="modal-root" hx-swap-oob="innerHTML"></div>
 }

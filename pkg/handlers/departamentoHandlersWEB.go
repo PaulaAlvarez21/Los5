@@ -33,9 +33,14 @@ func (h *DepartamentoWebHandler) renderDepartamentos(w http.ResponseWriter, r *h
 	}))
 }
 
+// NuevoDepartamentoWeb devuelve únicamente el modal con el formulario de alta.
+func (h *DepartamentoWebHandler) NuevoDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
+	renderHTML(w, r, http.StatusOK, views.DepartamentoFormModal(""))
+}
+
 func (h *DepartamentoWebHandler) CrearDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		h.renderDepartamentos(w, r, http.StatusBadRequest, "formulario inválido")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "formulario inválido")
 		return
 	}
 
@@ -47,8 +52,20 @@ func (h *DepartamentoWebHandler) CrearDepartamentoWeb(w http.ResponseWriter, r *
 		Descripcion: stringOpcional(r.FormValue("descripcion")),
 	}
 
-	if _, err := h.departamentoService.CrearDepartamento(r.Context(), departamento); err != nil {
-		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+	creado, err := h.departamentoService.CrearDepartamento(r.Context(), departamento)
+	if err != nil {
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if esHTMX(r) {
+		departamentos, err := h.departamentoService.ObtenerDepartamentos(r.Context())
+		if err != nil {
+			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+			return
+		}
+
+		renderHTML(w, r, http.StatusOK, views.DepartamentoCreado(creado, len(departamentos) == 1))
 		return
 	}
 
@@ -81,14 +98,39 @@ func (h *DepartamentoWebHandler) CambiarHigieneWeb(w http.ResponseWriter, r *htt
 func (h *DepartamentoWebHandler) EliminarDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
 		return
 	}
 
 	if err := h.departamentoService.EliminarDepartamento(r.Context(), id); err != nil {
-		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
+		return
+	}
+
+	if esHTMX(r) {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	http.Redirect(w, r, "/departamentos", http.StatusSeeOther)
+}
+
+// responderErrorAlta conserva el modal abierto y muestra el error adentro.
+func (h *DepartamentoWebHandler) responderErrorAlta(w http.ResponseWriter, r *http.Request, status int, mensaje string) {
+	if esHTMX(r) {
+		retarget(w, "#modal-root")
+		renderHTML(w, r, http.StatusOK, views.DepartamentoFormModal(mensaje))
+		return
+	}
+
+	h.renderDepartamentos(w, r, status, mensaje)
+}
+
+func (h *DepartamentoWebHandler) responderErrorBorrado(w http.ResponseWriter, r *http.Request, err error) {
+	if esHTMX(r) {
+		responderErrorHTMX(w, r, err, "#page-errors")
+		return
+	}
+
+	h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
 }

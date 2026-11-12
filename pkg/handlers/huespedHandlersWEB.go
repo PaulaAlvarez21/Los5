@@ -49,9 +49,20 @@ func (h *HuespedWebHandler) renderHuespedes(w http.ResponseWriter, r *http.Reque
 	}))
 }
 
+// NuevoHuespedWeb devuelve únicamente el modal con el formulario de alta.
+func (h *HuespedWebHandler) NuevoHuespedWeb(w http.ResponseWriter, r *http.Request) {
+	reservas, err := h.reservaService.ObtenerReservas(r.Context())
+	if err != nil {
+		responderErrorWeb(w, r, err)
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, ""))
+}
+
 func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		h.renderHuespedes(w, r, http.StatusBadRequest, "formulario inválido")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "formulario inválido")
 		return
 	}
 
@@ -59,7 +70,7 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 	if rawIDReserva := strings.TrimSpace(r.FormValue("id_reserva")); rawIDReserva != "" {
 		parsed, err := strconv.Atoi(rawIDReserva)
 		if err != nil || parsed <= 0 {
-			h.renderHuespedes(w, r, http.StatusBadRequest, "la reserva es inválida")
+			h.responderErrorAlta(w, r, http.StatusBadRequest, "la reserva es inválida")
 			return
 		}
 		valor := int32(parsed)
@@ -75,8 +86,20 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 		Observaciones: stringOpcional(r.FormValue("observaciones")),
 	}
 
-	if _, err := h.huespedService.CrearHuesped(r.Context(), huesped); err != nil {
-		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+	creado, err := h.huespedService.CrearHuesped(r.Context(), huesped)
+	if err != nil {
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if esHTMX(r) {
+		huespedes, err := h.huespedService.ObtenerHuespedes(r.Context())
+		if err != nil {
+			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+			return
+		}
+
+		renderHTML(w, r, http.StatusOK, views.HuespedCreado(creado, len(huespedes) == 1))
 		return
 	}
 
@@ -86,14 +109,48 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 func (h *HuespedWebHandler) EliminarHuespedWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
 		return
 	}
 
 	if err := h.huespedService.EliminarHuesped(r.Context(), id); err != nil {
-		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
+		return
+	}
+
+	if esHTMX(r) {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	http.Redirect(w, r, "/huespedes", http.StatusSeeOther)
+}
+
+func (h *HuespedWebHandler) responderErrorAlta(w http.ResponseWriter, r *http.Request, status int, mensaje string) {
+	if esHTMX(r) {
+		h.renderHuespedModalError(w, r, mensaje)
+		return
+	}
+
+	h.renderHuespedes(w, r, status, mensaje)
+}
+
+func (h *HuespedWebHandler) renderHuespedModalError(w http.ResponseWriter, r *http.Request, mensaje string) {
+	reservas, err := h.reservaService.ObtenerReservas(r.Context())
+	if err != nil {
+		responderErrorHTMX(w, r, err, "#modal-root")
+		return
+	}
+
+	retarget(w, "#modal-root")
+	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, mensaje))
+}
+
+func (h *HuespedWebHandler) responderErrorBorrado(w http.ResponseWriter, r *http.Request, err error) {
+	if esHTMX(r) {
+		responderErrorHTMX(w, r, err, "#page-errors")
+		return
+	}
+
+	h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
 }

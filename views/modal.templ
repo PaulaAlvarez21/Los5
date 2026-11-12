@@ -1,0 +1,39 @@
+package views
+
+import "Los5/pkg/dominio"
+
+// Modal es el contenedor común de los formularios de alta.
+// Se abre con el atributo open porque HTMX lo inserta en #modal-root,
+// y se cierra de forma nativa con el formulario method="dialog".
+templ Modal(titulo string, mensaje string) {
+	<dialog open class="app-modal">
+		<div class="modal-box">
+			<div class="modal-header">
+				<h3>{ titulo }</h3>
+				<form method="dialog">
+					<button type="submit" class="modal-close" aria-label="Cerrar">×</button>
+				</form>
+			</div>
+			@ErrorBanner(mensaje)
+			{ children... }
+		</div>
+	</dialog>
+}
+
+templ DepartamentoFormModal(mensaje string) {
+	@Modal("Nuevo departamento", mensaje) {
+		@DepartamentoForm()
+	}
+}
+
+templ ReservaFormModal(deptos []dominio.Departamento, huespedes []dominio.Huesped, mensaje string) {
+	@Modal("Nueva reserva", mensaje) {
+		@ReservaForm(deptos, huespedes)
+	}
+}
+
+templ HuespedFormModal(reservas []dominio.Reserva, mensaje string) {
+	@Modal("Nuevo huésped", mensaje) {
+		@HuespedForm(reservas)
+	}
+}

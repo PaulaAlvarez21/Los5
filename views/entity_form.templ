@@ -7,7 +7,10 @@ import (
 )
 
 templ DepartamentoForm() {
-	<form action="/departamentos" method="post" class="form-grid">
+	<form action="/departamentos" method="post" class="form-grid"
+		hx-post="/departamentos"
+		hx-target="#departamento-rows"
+		hx-swap="beforeend">
 		<label>
 			Nombre *
 			<input type="text" name="nombre" required placeholder="Ej: Departamento Centro"/>
@@ -31,7 +34,10 @@ templ DepartamentoForm() {
 }
 
 templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
-	<form action="/reservas" method="post" class="form-grid">
+	<form action="/reservas" method="post" class="form-grid"
+		hx-post="/reservas"
+		hx-target="#reserva-rows"
+		hx-swap="beforeend">
 		<div class="form-row">
 			<label>
 				Departamento *
@@ -89,7 +95,10 @@ templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
 }
 
 templ HuespedForm(reservas []dominio.Reserva) {
-	<form action="/huespedes" method="post" class="form-grid">
+	<form action="/huespedes" method="post" class="form-grid"
+		hx-post="/huespedes"
+		hx-target="#huesped-rows"
+		hx-swap="beforeend">
 		<label>
 			Reserva
 			<select name="id_reserva">

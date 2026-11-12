@@ -5,18 +5,19 @@ import "fmt"
 templ ReservasPage(data ReservasPageData) {
 	@Layout("Reservas", "reservas") {
 		@ErrorBanner(data.Error)
-		<details class="panel" open>
-			<summary><strong>+ Nueva reserva</strong></summary>
-			<div class="details-body">
-				@ReservaForm(data.Departamentos, data.Huespedes)
-			</div>
-		</details>
 		<section class="panel">
 			<div class="section-header">
 				<div>
 					<h2>Gestión de reservas</h2>
 					<p class="muted">Registro y control de ocupación.</p>
 				</div>
+				<button
+					class="btn btn-primary"
+					hx-get="/reservas/nuevo"
+					hx-target="#modal-root"
+					hx-swap="innerHTML">
+					+ Nueva reserva
+				</button>
 			</div>
 			<form action="/reservas" method="get" class="filter-grid">
 				<label>

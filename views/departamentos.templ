@@ -3,18 +3,19 @@ package views
 templ DepartamentosPage(data DepartamentosPageData) {
 	@Layout("Departamentos", "departamentos") {
 		@ErrorBanner(data.Error)
-		<details class="panel" open>
-			<summary><strong>+ Nuevo departamento</strong></summary>
-			<div class="details-body">
-				@DepartamentoForm()
-			</div>
-		</details>
 		<section class="panel">
 			<div class="section-header">
 				<div>
 					<h2>Catálogo de departamentos</h2>
 					<p class="muted">Administración de oferta inmobiliaria e higiene.</p>
 				</div>
+				<button
+					class="btn btn-primary"
+					hx-get="/departamentos/nuevo"
+					hx-target="#modal-root"
+					hx-swap="innerHTML">
+					+ Nuevo departamento
+				</button>
 			</div>
 			@DepartamentoList(data.Departamentos)
 		</section>

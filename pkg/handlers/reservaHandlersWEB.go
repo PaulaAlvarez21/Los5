@@ -70,39 +70,54 @@ func (h *ReservaWebHandler) renderPaginaReservas(
 	}))
 }
 
+// NuevaReservaWeb devuelve únicamente el modal con el formulario de alta.
+func (h *ReservaWebHandler) NuevaReservaWeb(w http.ResponseWriter, r *http.Request) {
+	pagina, err := h.combinadoService.ObtenerPaginaReservas(r.Context(), logica.FiltroReservas{})
+	if err != nil {
+		responderErrorWeb(w, r, err)
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.ReservaFormModal(
+		pagina.Departamentos,
+		pagina.Huespedes,
+		"",
+	))
+}
+
 func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		h.renderReservas(w, r, http.StatusBadRequest, "formulario inválido")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "formulario inválido")
 		return
 	}
 
 	idDepto, err := strconv.Atoi(r.FormValue("id_depto"))
 	if err != nil || idDepto <= 0 {
-		h.renderReservas(w, r, http.StatusBadRequest, "departamento inválido")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "departamento inválido")
 		return
 	}
 
 	cantNoches, err := strconv.Atoi(r.FormValue("cant_noches"))
 	if err != nil || cantNoches <= 0 {
-		h.renderReservas(w, r, http.StatusBadRequest, "cantidad de noches inválida")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "cantidad de noches inválida")
 		return
 	}
 
 	fechaInicio, err := parseFecha(r.FormValue("fecha_inicio"))
 	if err != nil {
-		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 		return
 	}
 
 	fechaFin, err := parseFecha(r.FormValue("fecha_fin"))
 	if err != nil {
-		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 		return
 	}
 
 	precioBase := strings.TrimSpace(r.FormValue("precio_base"))
 	if precioBase == "" {
-		h.renderReservas(w, r, http.StatusBadRequest, "precio base inválido")
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "precio base inválido")
 		return
 	}
 
@@ -118,28 +133,45 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 
 	reservaCreada, err := h.reservaService.CrearReserva(r.Context(), reserva)
 	if err != nil {
-		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 		return
 	}
 
 	if rawIDHuesped := strings.TrimSpace(r.FormValue("id_huesped")); rawIDHuesped != "" {
 		idHuesped, err := strconv.Atoi(rawIDHuesped)
 		if err != nil || idHuesped <= 0 {
-			h.renderReservas(w, r, http.StatusBadRequest, "huésped inválido")
+			h.responderErrorAlta(w, r, http.StatusBadRequest, "huésped inválido")
 			return
 		}
 
 		huesped, err := h.huespedService.ObtenerHuesped(r.Context(), int32(idHuesped))
 		if err != nil {
-			h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 			return
 		}
 
 		huesped.IDReserva = &reservaCreada.IDReserva
 		if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
-			h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 			return
 		}
+	}
+
+	if esHTMX(r) {
+		pagina, err := h.combinadoService.ObtenerPaginaReservas(r.Context(), logica.FiltroReservas{})
+		if err != nil {
+			h.renderReservaModalError(w, r, mensajeDeError(err))
+			return
+		}
+
+		detalle, ok := buscarReservaDetalle(pagina.Reservas, reservaCreada.IDReserva)
+		if !ok {
+			h.renderReservaModalError(w, r, "no se pudo recuperar la reserva creada")
+			return
+		}
+
+		renderHTML(w, r, http.StatusOK, views.ReservaCreada(detalle, len(pagina.Reservas) == 1))
+		return
 	}
 
 	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
@@ -148,14 +180,61 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 func (h *ReservaWebHandler) EliminarReservaWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
 		return
 	}
 
 	if err := h.reservaService.EliminarReserva(r.Context(), id); err != nil {
-		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		h.responderErrorBorrado(w, r, err)
+		return
+	}
+
+	if esHTMX(r) {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
+}
+
+func (h *ReservaWebHandler) responderErrorAlta(w http.ResponseWriter, r *http.Request, status int, mensaje string) {
+	if esHTMX(r) {
+		h.renderReservaModalError(w, r, mensaje)
+		return
+	}
+
+	h.renderReservas(w, r, status, mensaje)
+}
+
+func (h *ReservaWebHandler) renderReservaModalError(w http.ResponseWriter, r *http.Request, mensaje string) {
+	pagina, err := h.combinadoService.ObtenerPaginaReservas(r.Context(), logica.FiltroReservas{})
+	if err != nil {
+		responderErrorHTMX(w, r, err, "#modal-root")
+		return
+	}
+
+	retarget(w, "#modal-root")
+	renderHTML(w, r, http.StatusOK, views.ReservaFormModal(
+		pagina.Departamentos,
+		pagina.Huespedes,
+		mensaje,
+	))
+}
+
+func (h *ReservaWebHandler) responderErrorBorrado(w http.ResponseWriter, r *http.Request, err error) {
+	if esHTMX(r) {
+		responderErrorHTMX(w, r, err, "#page-errors")
+		return
+	}
+
+	h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+}
+
+func buscarReservaDetalle(reservas []dominio.ReservaConDetalle, id int32) (dominio.ReservaConDetalle, bool) {
+	for _, reserva := range reservas {
+		if reserva.IDReserva == id {
+			return reserva, true
+		}
+	}
+	return dominio.ReservaConDetalle{}, false
 }

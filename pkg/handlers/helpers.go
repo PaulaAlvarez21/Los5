@@ -24,6 +24,25 @@ func renderHTML(w http.ResponseWriter, r *http.Request, status int, componente t
 	}
 }
 
+// esHTMX indica si la request fue realizada por HTMX.
+func esHTMX(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true"
+}
+
+// retarget le indica a HTMX que reemplace otro contenedor con la respuesta.
+// Se usa para mostrar errores sin romper el swap normal de alta o borrado.
+func retarget(w http.ResponseWriter, target string) {
+	w.Header().Set("HX-Retarget", target)
+	w.Header().Set("HX-Reswap", "innerHTML")
+}
+
+// responderErrorHTMX devuelve un banner de error para un contenedor HTMX.
+// Se responde 200 para que HTMX haga el swap sin configuración adicional.
+func responderErrorHTMX(w http.ResponseWriter, r *http.Request, err error, target string) {
+	retarget(w, target)
+	renderHTML(w, r, http.StatusOK, views.ErrorBanner(mensajeDeError(err)))
+}
+
 // responderErrorWeb traduce un error de dominio a una página HTML de error.
 func responderErrorWeb(w http.ResponseWriter, r *http.Request, err error) {
 	renderHTML(w, r, statusDeError(err), views.ErrorPage(statusDeError(err), mensajeDeError(err)))

@@ -9,12 +9,15 @@ templ Layout(title string, activeTab string) {
 			<title>{ title } - Los 5 Alquileres</title>
 			<link rel="stylesheet" href="/static/pico.min.css"/>
 			<link rel="stylesheet" href="/static/styles.css"/>
+			<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
 		</head>
 		<body>
 			@Header(activeTab)
 			<main class="container main-content">
+				<div id="page-errors"></div>
 				{ children... }
 			</main>
+			<div id="modal-root"></div>
 		</body>
 	</html>
 }

@@ -63,18 +63,24 @@ func main() {
 
 	// Departamentos
 	http.HandleFunc("GET /departamentos", deptosHandler.DepartamentosWeb)
+	http.HandleFunc("GET /departamentos/nuevo", deptosHandler.NuevoDepartamentoWeb)
 	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamentoWeb)
 	http.HandleFunc("POST /departamentos/{id}/limpieza", deptosHandler.CambiarHigieneWeb)
+	http.HandleFunc("DELETE /departamentos/{id}", deptosHandler.EliminarDepartamentoWeb)
 	http.HandleFunc("POST /departamentos/{id}/eliminar", deptosHandler.EliminarDepartamentoWeb)
 
 	// Reservas
 	http.HandleFunc("GET /reservas", reservasHandler.ReservasWeb)
+	http.HandleFunc("GET /reservas/nuevo", reservasHandler.NuevaReservaWeb)
 	http.HandleFunc("POST /reservas", reservasHandler.CrearReservaWeb)
+	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReservaWeb)
 	http.HandleFunc("POST /reservas/{id}/eliminar", reservasHandler.EliminarReservaWeb)
 
 	// Huéspedes
 	http.HandleFunc("GET /huespedes", huespedesHandler.HuespedesWeb)
+	http.HandleFunc("GET /huespedes/nuevo", huespedesHandler.NuevoHuespedWeb)
 	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuespedWeb)
+	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.EliminarHuespedWeb)
 	http.HandleFunc("POST /huespedes/{id}/eliminar", huespedesHandler.EliminarHuespedWeb)
 
 	// Casos de uso combinados

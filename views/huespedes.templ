@@ -3,18 +3,19 @@ package views
 templ HuespedesPage(data HuespedesPageData) {
 	@Layout("Huéspedes", "huespedes") {
 		@ErrorBanner(data.Error)
-		<details class="panel" open>
-			<summary><strong>+ Nuevo huésped</strong></summary>
-			<div class="details-body">
-				@HuespedForm(data.Reservas)
-			</div>
-		</details>
 		<section class="panel">
 			<div class="section-header">
 				<div>
 					<h2>Padrón de huéspedes</h2>
 					<p class="muted">Registro general de clientes.</p>
 				</div>
+				<button
+					class="btn btn-primary"
+					hx-get="/huespedes/nuevo"
+					hx-target="#modal-root"
+					hx-swap="innerHTML">
+					+ Nuevo huésped
+				</button>
 			</div>
 			@HuespedList(data.Huespedes)
 		</section>
