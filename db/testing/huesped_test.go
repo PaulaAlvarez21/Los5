@@ -49,7 +49,7 @@ func datosTestHuesped(t *testing.T) sqlc.Huesped {
 		IDReserva:     sql.NullInt32{Int32: reserva.IDReserva, Valid: true},
 		Nombre:        "Juan",
 		Apellido:      "Perez",
-		Telefono:      sql.NullString{String: "123456789", Valid: true},
+		Telefono:      "123456789",
 		Email:         sql.NullString{String: "juan@test.com", Valid: true},
 		Observaciones: sql.NullString{String: "Huesped de prueba", Valid: true},
 	})
@@ -82,7 +82,7 @@ func TestCreateHuespedSinReserva(t *testing.T) {
 		IDReserva:     sql.NullInt32{},
 		Nombre:        "Sin",
 		Apellido:      "Reserva",
-		Telefono:      sql.NullString{},
+		Telefono:      "000000000",
 		Email:         sql.NullString{},
 		Observaciones: sql.NullString{},
 	})
@@ -140,7 +140,7 @@ func TestUpdateHuesped(t *testing.T) {
 		IDReserva:     huesped.IDReserva,
 		Nombre:        "Maria",
 		Apellido:      "Gomez",
-		Telefono:      sql.NullString{String: "987654321", Valid: true},
+		Telefono:      "987654321",
 		Email:         sql.NullString{String: "maria@test.com", Valid: true},
 		Observaciones: sql.NullString{String: "Huesped actualizado", Valid: true},
 	}

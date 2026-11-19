@@ -88,11 +88,15 @@ func toDominioDepartamento(departamentoDB sqlc.Departamento) dominio.Departament
 
 // Huesped funciones Repository
 func (r *BDRepository) CreateHuesped(ctx context.Context, huesped dominio.Huesped) (dominio.Huesped, error) {
+	telefono := ""
+	if huesped.Telefono != nil {
+		telefono = *huesped.Telefono
+	}
 	arg := sqlc.CreateHuespedParams{
 		IDReserva:     toNullInt32(huesped.IDReserva),
 		Nombre:        huesped.Nombre,
 		Apellido:      huesped.Apellido,
-		Telefono:      toNullString(huesped.Telefono),
+		Telefono:      telefono,
 		Email:         toNullString(huesped.Email),
 		Observaciones: toNullString(huesped.Observaciones), //hace la conversion de huespedstruct a sql
 	}
@@ -127,12 +131,16 @@ func (r *BDRepository) ListHuespedes(ctx context.Context) ([]dominio.Huesped, er
 }
 
 func (r *BDRepository) UpdateHuesped(ctx context.Context, huesped dominio.Huesped) error {
+	telefono := ""
+	if huesped.Telefono != nil {
+		telefono = *huesped.Telefono
+	}
 	arg := sqlc.UpdateHuespedParams{
 		IDHuesped:     huesped.IDHuesped,
 		IDReserva:     toNullInt32(huesped.IDReserva),
 		Nombre:        huesped.Nombre,
 		Apellido:      huesped.Apellido,
-		Telefono:      toNullString(huesped.Telefono),
+		Telefono:      telefono,
 		Email:         toNullString(huesped.Email),
 		Observaciones: toNullString(huesped.Observaciones),
 	}
@@ -145,12 +153,13 @@ func (r *BDRepository) DeleteHuesped(ctx context.Context, id int32) error {
 
 // conversiones de tipos
 func toDominioHuesped(huespedDB sqlc.Huesped) dominio.Huesped {
+	telefono := huespedDB.Telefono
 	return dominio.Huesped{
 		IDHuesped:     huespedDB.IDHuesped,
 		IDReserva:     fromNullInt32(huespedDB.IDReserva),
 		Nombre:        huespedDB.Nombre,
 		Apellido:      huespedDB.Apellido,
-		Telefono:      fromNullString(huespedDB.Telefono),
+		Telefono:      &telefono,
 		Email:         fromNullString(huespedDB.Email),
 		Observaciones: fromNullString(huespedDB.Observaciones),
 	}

@@ -32,8 +32,8 @@ templ ReservaFormModal(deptos []dominio.Departamento, huespedes []dominio.Huespe
 	}
 }
 
-templ HuespedFormModal(reservas []dominio.Reserva, mensaje string) {
+templ HuespedFormModal(reservas []dominio.Reserva, mensaje string, mostrarReserva bool) {
 	@Modal("Nuevo huésped", mensaje) {
-		@HuespedForm(reservas)
+		@HuespedForm(reservas, mostrarReserva)
 	}
 }

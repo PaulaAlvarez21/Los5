@@ -51,13 +51,19 @@ func (h *HuespedWebHandler) renderHuespedes(w http.ResponseWriter, r *http.Reque
 
 // NuevoHuespedWeb devuelve únicamente el modal con el formulario de alta.
 func (h *HuespedWebHandler) NuevoHuespedWeb(w http.ResponseWriter, r *http.Request) {
-	reservas, err := h.reservaService.ObtenerReservas(r.Context())
-	if err != nil {
-		responderErrorWeb(w, r, err)
-		return
+	mostrarReserva := r.URL.Query().Get("sin_reserva") != "1"
+
+	var reservas []dominio.Reserva
+	if mostrarReserva {
+		var err error
+		reservas, err = h.reservaService.ObtenerReservas(r.Context())
+		if err != nil {
+			responderErrorWeb(w, r, err)
+			return
+		}
 	}
 
-	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, ""))
+	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, "", mostrarReserva))
 }
 
 func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Request) {
@@ -77,11 +83,17 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 		idReserva = &valor
 	}
 
+	telefono := strings.TrimSpace(r.FormValue("telefono"))
+	if telefono == "" {
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "el teléfono es obligatorio")
+		return
+	}
+
 	huesped := dominio.Huesped{
 		IDReserva:     idReserva,
 		Nombre:        r.FormValue("nombre"),
 		Apellido:      r.FormValue("apellido"),
-		Telefono:      stringOpcional(r.FormValue("telefono")),
+		Telefono:      &telefono,
 		Email:         stringOpcional(r.FormValue("email")),
 		Observaciones: stringOpcional(r.FormValue("observaciones")),
 	}
@@ -136,14 +148,20 @@ func (h *HuespedWebHandler) responderErrorAlta(w http.ResponseWriter, r *http.Re
 }
 
 func (h *HuespedWebHandler) renderHuespedModalError(w http.ResponseWriter, r *http.Request, mensaje string) {
-	reservas, err := h.reservaService.ObtenerReservas(r.Context())
-	if err != nil {
-		responderErrorHTMX(w, r, err, "#modal-root")
-		return
+	mostrarReserva := r.URL.Query().Get("sin_reserva") != "1" && r.FormValue("sin_reserva") != "1"
+
+	var reservas []dominio.Reserva
+	if mostrarReserva {
+		var err error
+		reservas, err = h.reservaService.ObtenerReservas(r.Context())
+		if err != nil {
+			responderErrorHTMX(w, r, err, "#modal-root")
+			return
+		}
 	}
 
 	retarget(w, "#modal-root")
-	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, mensaje))
+	renderHTML(w, r, http.StatusOK, views.HuespedFormModal(reservas, mensaje, mostrarReserva))
 }
 
 func (h *HuespedWebHandler) responderErrorBorrado(w http.ResponseWriter, r *http.Request, err error) {

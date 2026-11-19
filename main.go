@@ -72,6 +72,7 @@ func main() {
 	// Reservas
 	http.HandleFunc("GET /reservas", reservasHandler.ReservasWeb)
 	http.HandleFunc("GET /reservas/nuevo", reservasHandler.NuevaReservaWeb)
+	http.HandleFunc("GET /reservas/noches", reservasHandler.CalcularNochesWeb)
 	http.HandleFunc("POST /reservas", reservasHandler.CrearReservaWeb)
 	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReservaWeb)
 	http.HandleFunc("POST /reservas/{id}/eliminar", reservasHandler.EliminarReservaWeb)

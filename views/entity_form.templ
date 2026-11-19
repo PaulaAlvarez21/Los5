@@ -33,6 +33,13 @@ templ DepartamentoForm() {
 	</form>
 }
 
+templ CampoCantNoches(valor string) {
+	<label id="campo-cant-noches">
+		Cantidad de noches *
+		<input type="number" name="cant_noches" min="1" required readonly value={ valor }/>
+	</label>
+}
+
 templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
 	<form action="/reservas" method="post" class="form-grid"
 		hx-post="/reservas"
@@ -42,37 +49,60 @@ templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
 			<label>
 				Departamento *
 				<select name="id_depto" required>
-					<option value="">Seleccione un departamento</option>
+					<option value="" disabled selected>Seleccione un departamento</option>
 					for _, d := range deptos {
 						<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
 					}
 				</select>
 			</label>
-			<label>
-				Huésped principal
-				<select name="id_huesped">
-					<option value="">Sin huésped asignado</option>
-					for _, h := range huespedes {
-						<option value={ fmt.Sprint(h.IDHuesped) }>{ h.Nombre } { h.Apellido }</option>
-					}
-				</select>
-			</label>
+			<div>
+				<label>
+					Huésped principal *
+					<select name="id_huesped" required>
+						<option value="" disabled selected>Seleccione un huésped</option>
+						for _, h := range huespedes {
+							<option value={ fmt.Sprint(h.IDHuesped) }>{ h.Nombre } { h.Apellido }</option>
+						}
+					</select>
+				</label>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					hx-get="/huespedes/nuevo?sin_reserva=1"
+					hx-target="#modal-root"
+					hx-swap="innerHTML">
+					+ Crear huésped
+				</button>
+			</div>
 		</div>
 		<div class="form-row">
 			<label>
 				Fecha inicio *
-				<input type="date" name="fecha_inicio" required/>
+				<input
+					type="date"
+					name="fecha_inicio"
+					required
+					hx-get="/reservas/noches"
+					hx-target="#campo-cant-noches"
+					hx-swap="outerHTML"
+					hx-trigger="change"
+					hx-include="[name='fecha_inicio'], [name='fecha_fin']"/>
 			</label>
 			<label>
 				Fecha fin *
-				<input type="date" name="fecha_fin" required/>
+				<input
+					type="date"
+					name="fecha_fin"
+					required
+					hx-get="/reservas/noches"
+					hx-target="#campo-cant-noches"
+					hx-swap="outerHTML"
+					hx-trigger="change"
+					hx-include="[name='fecha_inicio'], [name='fecha_fin']"/>
 			</label>
 		</div>
 		<div class="form-row">
-			<label>
-				Cantidad de noches *
-				<input type="number" name="cant_noches" min="1" required/>
-			</label>
+			@CampoCantNoches("")
 			<label>
 				Precio base ($) *
 				<input type="number" step="0.01" name="precio_base" required/>
@@ -94,36 +124,41 @@ templ ReservaForm(deptos []dominio.Departamento, huespedes []dominio.Huesped) {
 	</form>
 }
 
-templ HuespedForm(reservas []dominio.Reserva) {
+templ HuespedForm(reservas []dominio.Reserva, mostrarReserva bool) {
 	<form action="/huespedes" method="post" class="form-grid"
 		hx-post="/huespedes"
-		hx-target="#huesped-rows"
-		hx-swap="beforeend">
-		<label>
-			Reserva
-			<select name="id_reserva">
-				<option value="">Sin reserva asignada</option>
-				for _, r := range reservas {
-					<option value={ fmt.Sprint(r.IDReserva) }>
-						{ fmt.Sprintf("#%d · %s → %s", r.IDReserva, r.FechaInicio.Format("2006-01-02"), r.FechaFin.Format("2006-01-02")) }
-					</option>
-				}
-			</select>
-		</label>
+		hx-target="#modal-root"
+		hx-swap="innerHTML">
+		if !mostrarReserva {
+			<input type="hidden" name="sin_reserva" value="1"/>
+		}
+		if mostrarReserva {
+			<label>
+				Reserva
+				<select name="id_reserva">
+					<option value="">Sin reserva asignada</option>
+					for _, r := range reservas {
+						<option value={ fmt.Sprint(r.IDReserva) }>
+							{ fmt.Sprintf("#%d · %s → %s", r.IDReserva, r.FechaInicio.Format("2006-01-02"), r.FechaFin.Format("2006-01-02")) }
+						</option>
+					}
+				</select>
+			</label>
+		}
 		<div class="form-row">
 			<label>
 				Nombre *
 				<input type="text" name="nombre" required/>
 			</label>
 			<label>
-				Apellido *
-				<input type="text" name="apellido" required/>
+				Apellido
+				<input type="text" name="apellido"/>
 			</label>
 		</div>
 		<div class="form-row">
 			<label>
-				Teléfono
-				<input type="text" name="telefono" placeholder="Opcional"/>
+				Teléfono *
+				<input type="text" name="telefono" required/>
 			</label>
 			<label>
 				Email

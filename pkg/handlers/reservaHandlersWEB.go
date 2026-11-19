@@ -85,6 +85,20 @@ func (h *ReservaWebHandler) NuevaReservaWeb(w http.ResponseWriter, r *http.Reque
 	))
 }
 
+// CalcularNochesWeb devuelve el campo de noches calculado a partir de las fechas.
+func (h *ReservaWebHandler) CalcularNochesWeb(w http.ResponseWriter, r *http.Request) {
+	valor := ""
+	fechaInicio, errInicio := parseFecha(r.URL.Query().Get("fecha_inicio"))
+	fechaFin, errFin := parseFecha(r.URL.Query().Get("fecha_fin"))
+	if errInicio == nil && errFin == nil {
+		if noches := int(fechaFin.Sub(fechaInicio).Hours() / 24); noches > 0 {
+			valor = strconv.Itoa(noches)
+		}
+	}
+
+	renderHTML(w, r, http.StatusOK, views.CampoCantNoches(valor))
+}
+
 func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		h.responderErrorAlta(w, r, http.StatusBadRequest, "formulario inválido")
@@ -97,9 +111,16 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	cantNoches, err := strconv.Atoi(r.FormValue("cant_noches"))
-	if err != nil || cantNoches <= 0 {
-		h.responderErrorAlta(w, r, http.StatusBadRequest, "cantidad de noches inválida")
+	rawIDHuesped := strings.TrimSpace(r.FormValue("id_huesped"))
+	idHuesped, err := strconv.Atoi(rawIDHuesped)
+	if err != nil || idHuesped <= 0 {
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "huésped inválido")
+		return
+	}
+
+	huesped, err := h.huespedService.ObtenerHuesped(r.Context(), int32(idHuesped))
+	if err != nil {
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
 		return
 	}
 
@@ -112,6 +133,12 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 	fechaFin, err := parseFecha(r.FormValue("fecha_fin"))
 	if err != nil {
 		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	cantNoches := int(fechaFin.Sub(fechaInicio).Hours() / 24)
+	if cantNoches <= 0 {
+		h.responderErrorAlta(w, r, http.StatusBadRequest, "cantidad de noches inválida")
 		return
 	}
 
@@ -137,24 +164,10 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if rawIDHuesped := strings.TrimSpace(r.FormValue("id_huesped")); rawIDHuesped != "" {
-		idHuesped, err := strconv.Atoi(rawIDHuesped)
-		if err != nil || idHuesped <= 0 {
-			h.responderErrorAlta(w, r, http.StatusBadRequest, "huésped inválido")
-			return
-		}
-
-		huesped, err := h.huespedService.ObtenerHuesped(r.Context(), int32(idHuesped))
-		if err != nil {
-			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
-			return
-		}
-
-		huesped.IDReserva = &reservaCreada.IDReserva
-		if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
-			h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
-			return
-		}
+	huesped.IDReserva = &reservaCreada.IDReserva
+	if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
+		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+		return
 	}
 
 	if esHTMX(r) {

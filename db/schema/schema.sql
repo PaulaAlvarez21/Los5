@@ -36,7 +36,7 @@ CREATE TABLE huesped (
     id_reserva int  NULL,
     nombre varchar(50)  NOT NULL,
     apellido varchar(50)  NOT NULL,
-    telefono varchar(50)  NULL,
+    telefono varchar(50)  NOT NULL,
     email varchar(120)  NULL,
     observaciones varchar(255)  NULL,
     CONSTRAINT fk_huesped_reserva FOREIGN KEY (id_reserva)

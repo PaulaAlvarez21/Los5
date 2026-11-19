@@ -52,7 +52,7 @@ func crearHuespedCombinado(t *testing.T, idReserva int32, nombre, apellido strin
 		IDReserva:     sql.NullInt32{Int32: idReserva, Valid: true},
 		Nombre:        nombre,
 		Apellido:      apellido,
-		Telefono:      sql.NullString{String: "123456789", Valid: true},
+		Telefono:      "123456789",
 		Email:         sql.NullString{String: "combinado@test.com", Valid: true},
 		Observaciones: sql.NullString{String: "Huesped para test combinado", Valid: true},
 	})

@@ -150,6 +150,28 @@ templ HuespedRow(h dominio.Huesped) {
 	</tr>
 }
 
+templ HuespedRowOOB(h dominio.Huesped) {
+	<tr hx-swap-oob="beforeend:#huesped-rows">
+		<td class="strong">{ h.Nombre } { h.Apellido }</td>
+		<td>{ valorTexto(h.Telefono) }</td>
+		<td>{ valorTexto(h.Email) }</td>
+		<td class="muted">{ valorTexto(h.Observaciones) }</td>
+		<td>
+			<div class="row-actions">
+				<button
+					type="button"
+					class="btn btn-danger"
+					hx-delete={ templ.URL(fmt.Sprintf("/huespedes/%d", h.IDHuesped)) }
+					hx-target="closest tr"
+					hx-swap="outerHTML"
+					hx-confirm="¿Borrar este huésped?">
+					Borrar
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
 templ HuespedEmptyRow() {
 	<tr id="huesped-empty">
 		<td colspan="5" class="empty-cell">No hay huéspedes registrados.</td>
@@ -239,9 +261,8 @@ templ ReservaCreada(r dominio.ReservaConDetalle, quitarVacio bool) {
 }
 
 templ HuespedCreado(h dominio.Huesped, quitarVacio bool) {
-	@HuespedRow(h)
+	@HuespedRowOOB(h)
 	if quitarVacio {
 		<tr id="huesped-empty" hx-swap-oob="delete"></tr>
 	}
-	<div id="modal-root" hx-swap-oob="innerHTML"></div>
 }
