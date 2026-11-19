@@ -72,6 +72,65 @@ func (h *DepartamentoWebHandler) CrearDepartamentoWeb(w http.ResponseWriter, r *
 	http.Redirect(w, r, "/departamentos", http.StatusSeeOther)
 }
 
+// EditarDepartamentoWeb devuelve el modal con el formulario precargado.
+func (h *DepartamentoWebHandler) EditarDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	departamento, err := h.departamentoService.ObtenerDepartamento(r.Context(), id)
+	if err != nil {
+		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.DepartamentoEditarModal(departamento))
+}
+
+func (h *DepartamentoWebHandler) ActualizarDepartamentoWeb(w http.ResponseWriter, r *http.Request) {
+	fallo := func(err error) {
+		if esHTMX(r) {
+			responderErrorHTMX(w, r, err, "#page-errors")
+			return
+		}
+		h.renderDepartamentos(w, r, statusDeError(err), mensajeDeError(err))
+	}
+
+	id, err := parseID(r)
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		fallo(dominio.ValidationError("formulario inválido"))
+		return
+	}
+
+	departamento := dominio.Departamento{
+		IDDepto:     id,
+		Nombre:      r.FormValue("nombre"),
+		Direccion:   r.FormValue("direccion"),
+		Disponible:  parseBoolForm(r.FormValue("disponible")),
+		Limpio:      parseBoolForm(r.FormValue("limpio")),
+		Descripcion: stringOpcional(r.FormValue("descripcion")),
+	}
+
+	if err := h.departamentoService.ActualizarDepartamento(r.Context(), departamento); err != nil {
+		fallo(err)
+		return
+	}
+
+	if esHTMX(r) {
+		renderHTML(w, r, http.StatusOK, views.DepartamentoEditado(departamento))
+		return
+	}
+
+	http.Redirect(w, r, "/departamentos", http.StatusSeeOther)
+}
+
 func (h *DepartamentoWebHandler) CambiarHigieneWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {

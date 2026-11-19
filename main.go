@@ -64,7 +64,9 @@ func main() {
 	// Departamentos
 	http.HandleFunc("GET /departamentos", deptosHandler.DepartamentosWeb)
 	http.HandleFunc("GET /departamentos/nuevo", deptosHandler.NuevoDepartamentoWeb)
+	http.HandleFunc("GET /departamentos/{id}/editar", deptosHandler.EditarDepartamentoWeb)
 	http.HandleFunc("POST /departamentos", deptosHandler.CrearDepartamentoWeb)
+	http.HandleFunc("POST /departamentos/{id}/editar", deptosHandler.ActualizarDepartamentoWeb)
 	http.HandleFunc("POST /departamentos/{id}/limpieza", deptosHandler.CambiarHigieneWeb)
 	http.HandleFunc("DELETE /departamentos/{id}", deptosHandler.EliminarDepartamentoWeb)
 	http.HandleFunc("POST /departamentos/{id}/eliminar", deptosHandler.EliminarDepartamentoWeb)
@@ -73,14 +75,18 @@ func main() {
 	http.HandleFunc("GET /reservas", reservasHandler.ReservasWeb)
 	http.HandleFunc("GET /reservas/nuevo", reservasHandler.NuevaReservaWeb)
 	http.HandleFunc("GET /reservas/noches", reservasHandler.CalcularNochesWeb)
+	http.HandleFunc("GET /reservas/{id}/editar", reservasHandler.EditarReservaWeb)
 	http.HandleFunc("POST /reservas", reservasHandler.CrearReservaWeb)
+	http.HandleFunc("POST /reservas/{id}/editar", reservasHandler.ActualizarReservaWeb)
 	http.HandleFunc("DELETE /reservas/{id}", reservasHandler.EliminarReservaWeb)
 	http.HandleFunc("POST /reservas/{id}/eliminar", reservasHandler.EliminarReservaWeb)
 
 	// Huéspedes
 	http.HandleFunc("GET /huespedes", huespedesHandler.HuespedesWeb)
 	http.HandleFunc("GET /huespedes/nuevo", huespedesHandler.NuevoHuespedWeb)
+	http.HandleFunc("GET /huespedes/{id}/editar", huespedesHandler.EditarHuespedWeb)
 	http.HandleFunc("POST /huespedes", huespedesHandler.CrearHuespedWeb)
+	http.HandleFunc("POST /huespedes/{id}/editar", huespedesHandler.ActualizarHuespedWeb)
 	http.HandleFunc("DELETE /huespedes/{id}", huespedesHandler.EliminarHuespedWeb)
 	http.HandleFunc("POST /huespedes/{id}/eliminar", huespedesHandler.EliminarHuespedWeb)
 

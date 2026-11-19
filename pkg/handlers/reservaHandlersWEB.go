@@ -190,6 +190,179 @@ func (h *ReservaWebHandler) CrearReservaWeb(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
 }
 
+// primerHuespedDeReserva devuelve el huésped asociado con menor ID (el primero
+// cargado). ListHuespedes ordena por apellido, así que no alcanza con tomar el
+// primero del slice.
+func primerHuespedDeReserva(huespedes []dominio.Huesped, idReserva int32) *dominio.Huesped {
+	var primero *dominio.Huesped
+	for i := range huespedes {
+		huesped := &huespedes[i]
+		if huesped.IDReserva == nil || *huesped.IDReserva != idReserva {
+			continue
+		}
+		if primero == nil || huesped.IDHuesped < primero.IDHuesped {
+			primero = huesped
+		}
+	}
+	return primero
+}
+
+// EditarReservaWeb devuelve el modal con el formulario precargado. El selector
+// de huésped muestra el primero asociado a la reserva.
+func (h *ReservaWebHandler) EditarReservaWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	reserva, err := h.reservaService.ObtenerReserva(r.Context(), id)
+	if err != nil {
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	pagina, err := h.combinadoService.ObtenerPaginaReservas(r.Context(), logica.FiltroReservas{})
+	if err != nil {
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.ReservaEditarModal(
+		reserva,
+		primerHuespedDeReserva(pagina.Huespedes, id),
+		pagina.Departamentos,
+		pagina.Huespedes,
+	))
+}
+
+func (h *ReservaWebHandler) ActualizarReservaWeb(w http.ResponseWriter, r *http.Request) {
+	fallo := func(err error) {
+		if esHTMX(r) {
+			responderErrorHTMX(w, r, err, "#page-errors")
+			return
+		}
+		h.renderReservas(w, r, statusDeError(err), mensajeDeError(err))
+	}
+
+	id, err := parseID(r)
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		fallo(dominio.ValidationError("formulario inválido"))
+		return
+	}
+
+	idDepto, err := strconv.Atoi(r.FormValue("id_depto"))
+	if err != nil || idDepto <= 0 {
+		fallo(dominio.ValidationError("departamento inválido"))
+		return
+	}
+
+	rawIDHuesped := strings.TrimSpace(r.FormValue("id_huesped"))
+	idHuesped, err := strconv.Atoi(rawIDHuesped)
+	if err != nil || idHuesped <= 0 {
+		fallo(dominio.ValidationError("huésped inválido"))
+		return
+	}
+
+	huesped, err := h.huespedService.ObtenerHuesped(r.Context(), int32(idHuesped))
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	fechaInicio, err := parseFecha(r.FormValue("fecha_inicio"))
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	fechaFin, err := parseFecha(r.FormValue("fecha_fin"))
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	cantNoches := int(fechaFin.Sub(fechaInicio).Hours() / 24)
+	if cantNoches <= 0 {
+		fallo(dominio.ValidationError("cantidad de noches inválida"))
+		return
+	}
+
+	precioBase := strings.TrimSpace(r.FormValue("precio_base"))
+	if precioBase == "" {
+		fallo(dominio.ValidationError("precio base inválido"))
+		return
+	}
+
+	reserva := dominio.Reserva{
+		IDReserva:     id,
+		FechaInicio:   fechaInicio,
+		IDDepto:       int32(idDepto),
+		FechaFin:      fechaFin,
+		PrecioBase:    precioBase,
+		CantNoches:    int32(cantNoches),
+		Descuento:     stringOpcional(r.FormValue("descuento")),
+		Observaciones: stringOpcional(r.FormValue("observaciones")),
+	}
+
+	if err := h.reservaService.ActualizarReserva(r.Context(), reserva); err != nil {
+		fallo(err)
+		return
+	}
+
+	// Solo se desasigna el huésped que estaba preseleccionado (el de menor ID),
+	// nunca los demás asociados a esta reserva.
+	if rawActual := strings.TrimSpace(r.FormValue("id_huesped_actual")); rawActual != "" {
+		idActual, err := strconv.Atoi(rawActual)
+		if err != nil || idActual <= 0 {
+			fallo(dominio.ValidationError("huésped anterior inválido"))
+			return
+		}
+		if idActual != idHuesped {
+			anterior, err := h.huespedService.ObtenerHuesped(r.Context(), int32(idActual))
+			if err != nil {
+				fallo(err)
+				return
+			}
+			if anterior.IDReserva != nil && *anterior.IDReserva == id {
+				anterior.IDReserva = nil
+				if err := h.huespedService.ActualizarHuesped(r.Context(), anterior); err != nil {
+					fallo(err)
+					return
+				}
+			}
+		}
+	}
+
+	huesped.IDReserva = &reserva.IDReserva
+	if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
+		fallo(err)
+		return
+	}
+
+	if esHTMX(r) {
+		pagina, err := h.combinadoService.ObtenerPaginaReservas(r.Context(), logica.FiltroReservas{})
+		if err != nil {
+			fallo(err)
+			return
+		}
+		detalle, ok := buscarReservaDetalle(pagina.Reservas, id)
+		if !ok {
+			fallo(dominio.ValidationError("no se pudo recuperar la reserva editada"))
+			return
+		}
+		renderHTML(w, r, http.StatusOK, views.ReservaEditado(detalle))
+		return
+	}
+
+	http.Redirect(w, r, "/reservas", http.StatusSeeOther)
+}
+
 func (h *ReservaWebHandler) EliminarReservaWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {

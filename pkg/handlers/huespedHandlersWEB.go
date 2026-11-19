@@ -137,6 +137,89 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, "/huespedes", http.StatusSeeOther)
 }
 
+// EditarHuespedWeb devuelve el modal con el formulario precargado.
+func (h *HuespedWebHandler) EditarHuespedWeb(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	huesped, err := h.huespedService.ObtenerHuesped(r.Context(), id)
+	if err != nil {
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	reservas, err := h.reservaService.ObtenerReservas(r.Context())
+	if err != nil {
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	renderHTML(w, r, http.StatusOK, views.HuespedEditarModal(huesped, reservas))
+}
+
+func (h *HuespedWebHandler) ActualizarHuespedWeb(w http.ResponseWriter, r *http.Request) {
+	fallo := func(err error) {
+		if esHTMX(r) {
+			responderErrorHTMX(w, r, err, "#page-errors")
+			return
+		}
+		h.renderHuespedes(w, r, statusDeError(err), mensajeDeError(err))
+	}
+
+	id, err := parseID(r)
+	if err != nil {
+		fallo(err)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		fallo(dominio.ValidationError("formulario inválido"))
+		return
+	}
+
+	var idReserva *int32
+	if rawIDReserva := strings.TrimSpace(r.FormValue("id_reserva")); rawIDReserva != "" {
+		parsed, err := strconv.Atoi(rawIDReserva)
+		if err != nil || parsed <= 0 {
+			fallo(dominio.ValidationError("la reserva es inválida"))
+			return
+		}
+		valor := int32(parsed)
+		idReserva = &valor
+	}
+
+	telefono := strings.TrimSpace(r.FormValue("telefono"))
+	if telefono == "" {
+		fallo(dominio.ValidationError("el teléfono es obligatorio"))
+		return
+	}
+
+	huesped := dominio.Huesped{
+		IDHuesped:     id,
+		IDReserva:     idReserva,
+		Nombre:        r.FormValue("nombre"),
+		Apellido:      r.FormValue("apellido"),
+		Telefono:      &telefono,
+		Email:         stringOpcional(r.FormValue("email")),
+		Observaciones: stringOpcional(r.FormValue("observaciones")),
+	}
+
+	if err := h.huespedService.ActualizarHuesped(r.Context(), huesped); err != nil {
+		fallo(err)
+		return
+	}
+
+	if esHTMX(r) {
+		renderHTML(w, r, http.StatusOK, views.HuespedEditado(huesped))
+		return
+	}
+
+	http.Redirect(w, r, "/huespedes", http.StatusSeeOther)
+}
+
 func (h *HuespedWebHandler) EliminarHuespedWeb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {

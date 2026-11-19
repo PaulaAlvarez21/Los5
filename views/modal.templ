@@ -38,6 +38,24 @@ templ HuespedFormModal(reservas []dominio.Reserva, mensaje string, mostrarReserv
 	}
 }
 
+templ DepartamentoEditarModal(d dominio.Departamento) {
+	@Modal("Editar departamento", "") {
+		@DepartamentoEditarForm(d)
+	}
+}
+
+templ HuespedEditarModal(h dominio.Huesped, reservas []dominio.Reserva) {
+	@Modal("Editar huésped", "") {
+		@HuespedEditarForm(h, reservas)
+	}
+}
+
+templ ReservaEditarModal(r dominio.Reserva, primerHuesped *dominio.Huesped, deptos []dominio.Departamento, huespedes []dominio.Huesped) {
+	@Modal("Editar reserva", "") {
+		@ReservaEditarForm(r, primerHuesped, deptos, huespedes)
+	}
+}
+
 // ReabrirFormReserva se usa después de una alta rápida de huésped hecha desde
 // el formulario de reserva. Reemplaza el modal del huésped por un disparador
 // que pide /reservas/nuevo; ese endpoint ya devuelve el formulario de reserva

@@ -175,3 +175,181 @@ templ HuespedForm(reservas []dominio.Reserva, mostrarReserva bool) {
 		</div>
 	</form>
 }
+
+// DepartamentoEditarForm reutiliza los campos del alta pero con los valores
+// actuales. hx-target apunta a la fila concreta, que se reemplaza completa.
+templ DepartamentoEditarForm(d dominio.Departamento) {
+	<form action={ templ.URL(fmt.Sprintf("/departamentos/%d/editar", d.IDDepto)) } method="post" class="form-grid"
+		hx-post={ fmt.Sprintf("/departamentos/%d/editar", d.IDDepto) }
+		hx-target={ fmt.Sprintf("#departamento-%d", d.IDDepto) }
+		hx-swap="outerHTML">
+		<label>
+			Nombre *
+			<input type="text" name="nombre" value={ d.Nombre } required/>
+		</label>
+		<label>
+			Dirección *
+			<input type="text" name="direccion" value={ d.Direccion } required/>
+		</label>
+		<label>
+			Descripción
+			<textarea name="descripcion" rows="2">{ valorTexto(d.Descripcion) }</textarea>
+		</label>
+		<div class="checks">
+			if d.Disponible {
+				<label><input type="checkbox" name="disponible" value="true" checked/> Disponible</label>
+			} else {
+				<label><input type="checkbox" name="disponible" value="true"/> Disponible</label>
+			}
+			if d.Limpio {
+				<label><input type="checkbox" name="limpio" value="true" checked/> Limpio</label>
+			} else {
+				<label><input type="checkbox" name="limpio" value="true"/> Limpio</label>
+			}
+		</div>
+		<div class="form-actions">
+			<button type="submit">Guardar cambios</button>
+		</div>
+	</form>
+}
+
+templ HuespedEditarForm(h dominio.Huesped, reservas []dominio.Reserva) {
+	<form action={ templ.URL(fmt.Sprintf("/huespedes/%d/editar", h.IDHuesped)) } method="post" class="form-grid"
+		hx-post={ fmt.Sprintf("/huespedes/%d/editar", h.IDHuesped) }
+		hx-target={ fmt.Sprintf("#huesped-%d", h.IDHuesped) }
+		hx-swap="outerHTML">
+		<label>
+			Reserva
+			<select name="id_reserva">
+				<option value="">Sin reserva asignada</option>
+				for _, reserva := range reservas {
+					if h.IDReserva != nil && *h.IDReserva == reserva.IDReserva {
+						<option value={ fmt.Sprint(reserva.IDReserva) } selected>
+							{ fmt.Sprintf("#%d · %s → %s", reserva.IDReserva, reserva.FechaInicio.Format("2006-01-02"), reserva.FechaFin.Format("2006-01-02")) }
+						</option>
+					} else {
+						<option value={ fmt.Sprint(reserva.IDReserva) }>
+							{ fmt.Sprintf("#%d · %s → %s", reserva.IDReserva, reserva.FechaInicio.Format("2006-01-02"), reserva.FechaFin.Format("2006-01-02")) }
+						</option>
+					}
+				}
+			</select>
+		</label>
+		<div class="form-row">
+			<label>
+				Nombre *
+				<input type="text" name="nombre" value={ h.Nombre } required/>
+			</label>
+			<label>
+				Apellido
+				<input type="text" name="apellido" value={ h.Apellido }/>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Teléfono *
+				<input type="text" name="telefono" value={ valorTexto(h.Telefono) } required/>
+			</label>
+			<label>
+				Email
+				<input type="email" name="email" value={ valorTexto(h.Email) }/>
+			</label>
+		</div>
+		<label>
+			Observaciones
+			<textarea name="observaciones" rows="2">{ valorTexto(h.Observaciones) }</textarea>
+		</label>
+		<div class="form-actions">
+			<button type="submit">Guardar cambios</button>
+		</div>
+	</form>
+}
+
+// ReservaEditarForm muestra al primer huésped de la reserva preseleccionado.
+// Su ID viaja en id_huesped_actual para desasignar solo ese al guardar.
+templ ReservaEditarForm(r dominio.Reserva, primerHuesped *dominio.Huesped, deptos []dominio.Departamento, huespedes []dominio.Huesped) {
+	<form action={ templ.URL(fmt.Sprintf("/reservas/%d/editar", r.IDReserva)) } method="post" class="form-grid"
+		hx-post={ fmt.Sprintf("/reservas/%d/editar", r.IDReserva) }
+		hx-target={ fmt.Sprintf("#reserva-%d", r.IDReserva) }
+		hx-swap="outerHTML">
+		if primerHuesped != nil {
+			<input type="hidden" name="id_huesped_actual" value={ fmt.Sprint(primerHuesped.IDHuesped) }/>
+		}
+		<div class="form-row">
+			<label>
+				Departamento *
+				<select name="id_depto" required>
+					<option value="" disabled>Seleccione un departamento</option>
+					for _, d := range deptos {
+						if r.IDDepto == d.IDDepto {
+							<option value={ fmt.Sprint(d.IDDepto) } selected>{ d.Nombre }</option>
+						} else {
+							<option value={ fmt.Sprint(d.IDDepto) }>{ d.Nombre }</option>
+						}
+					}
+				</select>
+			</label>
+			<label>
+				Huésped principal *
+				<select name="id_huesped" required>
+					<option value="" disabled>Seleccione un huésped</option>
+					for _, h := range huespedes {
+						if primerHuesped != nil && primerHuesped.IDHuesped == h.IDHuesped {
+							<option value={ fmt.Sprint(h.IDHuesped) } selected>{ h.Nombre } { h.Apellido }</option>
+						} else {
+							<option value={ fmt.Sprint(h.IDHuesped) }>{ h.Nombre } { h.Apellido }</option>
+						}
+					}
+				</select>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Fecha inicio *
+				<input
+					type="date"
+					name="fecha_inicio"
+					value={ r.FechaInicio.Format("2006-01-02") }
+					required
+					hx-get="/reservas/noches"
+					hx-target="#campo-cant-noches"
+					hx-swap="outerHTML"
+					hx-trigger="change"
+					hx-include="[name='fecha_inicio'], [name='fecha_fin']"/>
+			</label>
+			<label>
+				Fecha fin *
+				<input
+					type="date"
+					name="fecha_fin"
+					value={ r.FechaFin.Format("2006-01-02") }
+					required
+					hx-get="/reservas/noches"
+					hx-target="#campo-cant-noches"
+					hx-swap="outerHTML"
+					hx-trigger="change"
+					hx-include="[name='fecha_inicio'], [name='fecha_fin']"/>
+			</label>
+		</div>
+		<div class="form-row">
+			@CampoCantNoches(fmt.Sprint(r.CantNoches))
+			<label>
+				Precio base ($) *
+				<input type="number" step="0.01" name="precio_base" value={ r.PrecioBase } required/>
+			</label>
+		</div>
+		<div class="form-row">
+			<label>
+				Descuento (%)
+				<input type="number" step="0.01" name="descuento" min="0" max="100" value={ valorTexto(r.Descuento) } placeholder="Opcional"/>
+			</label>
+			<label>
+				Observaciones
+				<input type="text" name="observaciones" value={ valorTexto(r.Observaciones) } placeholder="Opcional"/>
+			</label>
+		</div>
+		<div class="form-actions">
+			<button type="submit">Guardar cambios</button>
+		</div>
+	</form>
+}
