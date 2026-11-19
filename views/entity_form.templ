@@ -128,6 +128,7 @@ templ HuespedForm(reservas []dominio.Reserva, mostrarReserva bool) {
 	<form action="/huespedes" method="post" class="form-grid"
 		hx-post="/huespedes"
 		hx-target="#modal-root"
+		hx-on:after-request=""
 		hx-swap="innerHTML">
 		if !mostrarReserva {
 			<input type="hidden" name="sin_reserva" value="1"/>

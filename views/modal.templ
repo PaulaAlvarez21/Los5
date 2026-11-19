@@ -37,3 +37,16 @@ templ HuespedFormModal(reservas []dominio.Reserva, mensaje string, mostrarReserv
 		@HuespedForm(reservas, mostrarReserva)
 	}
 }
+
+// ReabrirFormReserva se usa después de una alta rápida de huésped hecha desde
+// el formulario de reserva. Reemplaza el modal del huésped por un disparador
+// que pide /reservas/nuevo; ese endpoint ya devuelve el formulario de reserva
+// con los datos actualizados, incluido el huésped recién creado.
+templ ReabrirFormReserva() {
+	<div
+		hx-get="/reservas/nuevo"
+		hx-trigger="load"
+		hx-target="#modal-root"
+		hx-swap="innerHTML">
+	</div>
+}

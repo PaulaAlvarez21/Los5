@@ -72,6 +72,13 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Ambos formularios de alta envían sin_reserva: "true" cuando el modal se
+	// abrió desde Nueva reserva y "false" cuando se abrió desde Huéspedes.
+	sinReserva := parseBoolForm(r.FormValue("sin_reserva"))
+	if !sinReserva {
+		sinReserva = parseBoolForm(r.URL.Query().Get("sin_reserva"))
+	}
+
 	var idReserva *int32
 	if rawIDReserva := strings.TrimSpace(r.FormValue("id_reserva")); rawIDReserva != "" {
 		parsed, err := strconv.Atoi(rawIDReserva)
@@ -101,6 +108,18 @@ func (h *HuespedWebHandler) CrearHuespedWeb(w http.ResponseWriter, r *http.Reque
 	creado, err := h.huespedService.CrearHuesped(r.Context(), huesped)
 	if err != nil {
 		h.responderErrorAlta(w, r, statusDeError(err), mensajeDeError(err))
+		return
+	}
+
+	if sinReserva {
+		if esHTMX(r) {
+			// El form de huésped ya apunta a #modal-root: el disparador se inserta
+			// ahí y su trigger "load" vuelve a pedir el formulario de reserva.
+			renderHTML(w, r, http.StatusOK, views.ReabrirFormReserva())
+			return
+		}
+
+		http.Redirect(w, r, "/reservas", http.StatusSeeOther)
 		return
 	}
 

@@ -108,18 +108,19 @@ Reserva:
     hx-swap="beforeend">
 ```
 
-Huésped:
+Huésped (caso especial, ver §9):
 
 ```html
 <form action="/huespedes" method="post" class="form-grid"
     hx-post="/huespedes"
-    hx-target="#huesped-rows"
-    hx-swap="beforeend">
+    hx-target="#modal-root"
+    hx-swap="innerHTML">
 ```
 
-`hx-target` apunta al `<tbody>` y `hx-swap="beforeend"` inserta la respuesta al
-final. Por eso el servidor debe responder **una fila `<tr>`**, no la tabla
-completa.
+En departamentos y reservas, `hx-target` apunta al `<tbody>` y
+`hx-swap="beforeend"` inserta la respuesta al final. Por eso el servidor debe
+responder **una fila `<tr>`**, no la tabla completa. En huéspedes el formulario
+apunta al modal y la fila se agrega mediante un swap OOB.
 
 ---
 
@@ -374,6 +375,42 @@ Por eso las filas OOB se emiten como hermanas directas de la fila nueva:
 El parser HTML del navegador conserva los `<tr>` en el fragmento que arma HTMX,
 y el procesamiento OOB ocurre antes del swap normal, por lo que la fila OOB se
 procesa y se quita del fragmento antes de insertar la fila nueva.
+
+### Caso especial: alta de huéspedes (OOB con `beforeend`)
+
+El formulario de huésped apunta a `#modal-root` con `hx-swap="innerHTML"` para
+poder cerrar el modal y, en el atajo desde "Nueva reserva", reemplazarlo por el
+disparador que reabre el formulario de reserva. Por eso la fila nueva **no** es
+la respuesta normal: se inserta con un swap OOB desde `HuespedCreado`.
+
+Acá el OOB **no** puede ir directamente sobre el `<tr>`:
+
+```html
+<!-- Incorrecto -->
+<tr hx-swap-oob="beforeend:#huesped-rows"> ... </tr>
+```
+
+htmx inserta el **contenido** del elemento marcado cuando el swap no es
+`outerHTML`. Con el atributo en el `<tr>`, los `<td>` caen como hijos directos
+del `<tbody>` sin su fila contenedora. El navegador agrupa todas esas celdas
+sueltas en una única fila anónima, así que cada huésped nuevo aparece a la
+derecha del anterior en lugar de en una línea nueva (se notaba al agregar el
+tercer huésped).
+
+La solución es envolver la fila en un `<tbody>` que lleve el OOB:
+
+```templ
+templ HuespedRowOOB(h dominio.Huesped) {
+	<tbody hx-swap-oob="beforeend:#huesped-rows">
+		<tr>...</tr>
+	</tbody>
+}
+```
+
+htmx mueve los hijos del `<tbody>` —es decir, el `<tr>` completo— al final de
+`#huesped-rows`. El wrapper no se inserta: es solo el contenedor del contenido
+que se quiere agregar. El `<tr id="huesped-empty" hx-swap-oob="delete">` sigue
+siendo un hermano directo, igual que en los otros listados.
 
 ---
 

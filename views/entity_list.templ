@@ -150,26 +150,32 @@ templ HuespedRow(h dominio.Huesped) {
 	</tr>
 }
 
+// HuespedRowOOB envuelve la fila en un tbody porque htmx, con un swap OOB
+// distinto de outerHTML (acá beforeend), inserta el contenido del elemento
+// marcado y no el elemento en sí. Sin el wrapper, los td caerían directamente
+// en #huesped-rows y el navegador los agruparía en una sola fila anónima.
 templ HuespedRowOOB(h dominio.Huesped) {
-	<tr hx-swap-oob="beforeend:#huesped-rows">
-		<td class="strong">{ h.Nombre } { h.Apellido }</td>
-		<td>{ valorTexto(h.Telefono) }</td>
-		<td>{ valorTexto(h.Email) }</td>
-		<td class="muted">{ valorTexto(h.Observaciones) }</td>
-		<td>
-			<div class="row-actions">
-				<button
-					type="button"
-					class="btn btn-danger"
-					hx-delete={ templ.URL(fmt.Sprintf("/huespedes/%d", h.IDHuesped)) }
-					hx-target="closest tr"
-					hx-swap="outerHTML"
-					hx-confirm="¿Borrar este huésped?">
-					Borrar
-				</button>
-			</div>
-		</td>
-	</tr>
+	<tbody hx-swap-oob="beforeend:#huesped-rows">
+		<tr>
+			<td class="strong">{ h.Nombre } { h.Apellido }</td>
+			<td>{ valorTexto(h.Telefono) }</td>
+			<td>{ valorTexto(h.Email) }</td>
+			<td class="muted">{ valorTexto(h.Observaciones) }</td>
+			<td>
+				<div class="row-actions">
+					<button
+						type="button"
+						class="btn btn-danger"
+						hx-delete={ templ.URL(fmt.Sprintf("/huespedes/%d", h.IDHuesped)) }
+						hx-target="closest tr"
+						hx-swap="outerHTML"
+						hx-confirm="¿Borrar este huésped?">
+						Borrar
+					</button>
+				</div>
+			</td>
+		</tr>
+	</tbody>
 }
 
 templ HuespedEmptyRow() {
