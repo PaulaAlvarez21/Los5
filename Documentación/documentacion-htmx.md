@@ -533,7 +533,7 @@ Resultados:
 
 - `templ generate` completó correctamente.
 - `go build ./...` y `go vet ./...` no reportaron errores.
-- `make test-web` pasó los 32 requests de `web.hurl`, incluyendo altas por
+- `make test-web` pasó los 33 requests de `web.hurl`, incluyendo altas por
   formulario con redirección `303` y las validaciones existentes.
 
 También se verificó el fragmento generado por `DepartamentoCreado`: el servidor

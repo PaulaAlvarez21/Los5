@@ -89,9 +89,30 @@ HTTP 200
 body contains "Gestión de reservas"
 body contains "No hay reservas registradas"
 
+# El alta de reserva exige un huésped existente: se crea primero con el atajo
+# "sin reserva" (mismo flujo que el botón "+ Crear huésped" del formulario).
+GET http://localhost:8080/huespedes
+HTTP 200
+[Asserts]
+body contains "Padrón de huéspedes"
+body contains "No hay huéspedes registrados"
+
+POST http://localhost:8080/huespedes
+[FormParams]
+sin_reserva: 1
+nombre: Maria
+apellido: Gonzalez
+telefono: 2494123456
+email: maria@example.com
+observaciones: Huésped de prueba
+HTTP 303
+[Asserts]
+header "Location" == "/reservas"
+
 POST http://localhost:8080/reservas
 [FormParams]
 id_depto: 1
+id_huesped: 1
 fecha_inicio: 2026-11-01
 fecha_fin: 2026-11-05
 cant_noches: 4
@@ -121,13 +142,14 @@ body contains "Departamento Centro"
 POST http://localhost:8080/reservas
 [FormParams]
 id_depto: 1
+id_huesped: 1
 fecha_inicio: 2026-11-05
 fecha_fin: 2026-11-01
 cant_noches: 4
 precio_base: 15000.00
 HTTP 400
 [Asserts]
-body contains "datos de reserva inválidos"
+body contains "cantidad de noches inválida"
 
 GET http://localhost:8080/reservas?depto_id=abc
 HTTP 400
@@ -140,20 +162,14 @@ HTTP 400
 # HUÉSPEDES
 # ==========================================
 
-GET http://localhost:8080/huespedes
-HTTP 200
-[Asserts]
-body contains "Padrón de huéspedes"
-body contains "No hay huéspedes registrados"
-
+# Alta de un segundo huésped, ya asociado a la reserva creada.
 POST http://localhost:8080/huespedes
 [FormParams]
 id_reserva: 1
-nombre: Maria
-apellido: Gonzalez
-telefono: 2494123456
-email: maria@example.com
-observaciones: Huésped de prueba
+nombre: Juan
+apellido: Perez
+telefono: 2494654321
+email: juan@example.com
 HTTP 303
 [Asserts]
 header "Location" == "/huespedes"
@@ -167,8 +183,9 @@ body contains "maria@example.com"
 
 POST http://localhost:8080/huespedes
 [FormParams]
-nombre: Pedro
-apellido:
+nombre:
+apellido: Perez
+telefono: 2494123456
 HTTP 400
 [Asserts]
 body contains "datos de huesped inválidos"

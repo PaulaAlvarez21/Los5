@@ -257,10 +257,10 @@ make check   # go build ./... + go vet ./...
 
 Ambos pasan sin errores.
 
-Nota: `make test-web` falla en un request de `web.hurl` que crea una reserva sin
-`id_huesped`. Ese campo pasó a ser obligatorio en el commit anterior al de esta
-función (`72b5a55`), y el archivo de pruebas no se actualizó. No es un problema
-de la edición: no se tocó ni el alta de reservas ni `web.hurl`.
+Nota: `web.hurl` crea primero el huésped principal (con `sin_reserva: 1`) y
+después la reserva enviando `id_huesped`, porque desde `72b5a55` ese campo es
+obligatorio. El alta de reserva asigna ese huésped a la reserva recién creada,
+así que los casos combinados siguen encontrando al huésped de la reserva.
 
 ## 9. Resumen de archivos modificados
 

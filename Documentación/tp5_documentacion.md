@@ -451,4 +451,4 @@ Requiere Docker para PostgreSQL y `hurl` instalado.
 - `templ generate` sin errores.
 - `go build ./...` sin errores.
 - `go vet ./...` sin errores.
-- `make test-web` ejecutado con Docker: **32 requests, 0 fallos**.
+- `make test-web` ejecutado con Docker: **33 requests, 0 fallos**.
